@@ -208,70 +208,6 @@
 
   
   
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import {
-    getFirestore, doc, setDoc, getDoc
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "...",
-    authDomain: "...",
-    ...
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.saveToFirebase = async function (data) {
-    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const userId = savedUser.id;
-
-    if (!userId) {
-      console.warn("❌ userId отсутствует");
-      return;
-    }
-
-    try {
-      await setDoc(doc(db, "orders", String(userId)), {
-        ...data,
-        user_id: userId,
-        username: savedUser.username || null,
-        first_name: savedUser.first_name || null,
-        phone: savedUser.phone || null,
-        status: true,
-        createdAt: new Date().toISOString()
-      });
-      console.log("✅ Заказ сохранён в Firebase:", userId);
-    } catch (e) {
-      console.error("❌ Ошибка при сохранении:", e);
-    }
-  };
-
-  window.checkExistingOrder = async function () {
-    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const userId = savedUser.id;
-
-    if (!userId) return;
-
-    try {
-      const snap = await getDoc(doc(db, "orders", String(userId)));
-      if (snap.exists()) {
-        const order = snap.data();
-        if (order.status === true) {
-          showSummary(order);
-        }
-      }
-    } catch (e) {
-      console.error("❌ Ошибка при получении заказа:", e);
-    }
-  };
-</script>
-
 
   
   
@@ -417,304 +353,88 @@
     <div class="tab" onclick="showTab(2)">Профиль</div>
   </div>
 
-  <script>
-   // стало:
-	let savedOrders = {
-	  saryozek: null,
-	  intercity: null
-	};
-    const cities = ["Жаркент", "Конаев", "Сарыозек", "Талдыкорган", "Алматы"];
-    const fromCity = document.getElementById("fromCity");
-    const toCity = document.getElementById("toCity");
 
-    cities.forEach(city => {
-      const option = new Option(city, city);
-      fromCity.add(option.cloneNode(true));
-      toCity.add(option.cloneNode(true));
-    });
-
-    function updateToCityOptions() {
-      const selected = fromCity.value;
-      toCity.innerHTML = "<option disabled selected>Выберите город</option>";
-      cities.filter(c => c !== selected).forEach(city => {
-        toCity.add(new Option(city, city));
-      });
-    }
-
-    let currentTab = 0;
-    const content = document.getElementById("content");
-
-    function showTab(index) {
-      content.style.transition = "transform 0.3s ease";
-      requestAnimationFrame(() => {
-        content.style.transform = `translateX(-${index * 100}vw)`;
-      });
-      document.querySelectorAll(".tab").forEach((tab, i) => {
-        tab.classList.toggle("active", i === index);
-      });
-      currentTab = index;
-      restoreOrderUI();
-    }
-
-    function restoreOrderUI() {
-      document.getElementById("summary").style.display = "none";
-      document.getElementById("saryozekForm").classList.remove("hidden");
-      document.getElementById("intercityForm").classList.remove("hidden");
-      document.getElementById("cancelBtn").style.display = "none";
-      document.getElementById("cancelBtnIntercity").style.display = "none";
-
-      if (currentTab === 0 && savedOrders.saryozek) {
-		  showSummary(savedOrders.saryozek);
-		} else if (currentTab === 1 && savedOrders.intercity) {
-		  showSummary(savedOrders.intercity);
-		}
-
-    }
-
-    function showSummary(data) {
-      if (currentTab === 0) {
-		  savedOrders.saryozek = data;
-		  localStorage.setItem("saryozek_order", JSON.stringify(data));
-		} else if (currentTab === 1) {
-		  savedOrders.intercity = data;
-		  localStorage.setItem("intercity_order", JSON.stringify(data));
-		}
-
-      const summary = document.getElementById("summary");
-      summary.innerHTML = '  <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>       <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>  ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}';
-      summary.style.display = "block";
-
-      if (currentTab === 0) {
-        document.getElementById("saryozekForm").classList.add("hidden");
-        document.getElementById("cancelBtn").style.display = "block";
-      } else if (currentTab === 1) {
-        document.getElementById("intercityForm").classList.add("hidden");
-        document.getElementById("cancelBtnIntercity").style.display = "block";
-      }
-    }
-
-    function cancelOrder() {
-     if (currentTab === 0) {
-		  savedOrders.saryozek = null;
-		  localStorage.removeItem("saryozek_order");
-		} else if (currentTab === 1) {
-		  savedOrders.intercity = null;
-		  localStorage.removeItem("intercity_order");
-		}
-
-      document.getElementById("summary").style.display = "none";
-      document.getElementById("saryozekForm").classList.remove("hidden");
-      document.getElementById("intercityForm").classList.remove("hidden");
-      document.getElementById("cancelBtn").style.display = "none";
-      document.getElementById("cancelBtnIntercity").style.display = "none";
-    }
-
-    function orderTaxi() { 
-	  const from = document.getElementById("from").value.trim();
-	  const to = document.getElementById("to").value.trim();
-	  const note = document.getElementById("note").value.trim();
-
-	  if (!from) {
-		alert("Пожалуйста, укажите адрес отправления.");
-		//alert("Пожалуйста, заполните поля 'Откуда' и 'Куда'.");
-		return;
-	  }
-
-	  saveRecentAddress("fromList", from);
-	  saveRecentAddress("toList", to);
-
-	  getLocation(location => {
-		const order = {
-		  from,
-		  to,
-		  note,
-		  type: "saryozek",
-		  location: location
-			? { lat: location.latitude, lng: location.longitude }
-			: null,
-		  createdAt: new Date().toISOString()
-		};
-
-		showSummary(order);
-		saveToFirebase(order);
-		alert("Заказ оформлен (форма)");
-	  });
-	}
-
-
-
-
-    function orderQuick() {
-      getLocation(location => {
-        showSummary({ from: "Моё местоположение", to: "-", note: "Быстрый вызов" });
-        alert("Быстрый заказ оформлен");
-      });
-    }
-
-    function orderIntercity() {
-	  const from = fromCity.value;
-	  const to = toCity.value;
-	  const price = document.getElementById("price").value.trim();
-	  const dateTime = document.getElementById("tripDate").value;
-
-	  if (!from || !to || !price || !dateTime) {
-		alert("Пожалуйста, заполните все поля для межгорода.");
-		return;
-	  }
-
-	  getLocation(location => {
-		showSummary({ from, to, note: `Цена: ${price} тг. Время: ${dateTime}` });
-		alert("Межгород оформлен");
-	  });
-	}
-
-
-    function getLocation(callback) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => callback({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-          err => alert("Не удалось получить локацию")
-        );
-      } else {
-        alert("Геолокация не поддерживается");
-      }
-    }
-
-    function saveRecentAddress(listId, value) {
-      if (!value) return;
-      let key = "recent_" + listId;
-      let list = JSON.parse(localStorage.getItem(key) || "[]");
-      list = [value, ...list.filter(v => v !== value)].slice(0, 5);
-      localStorage.setItem(key, JSON.stringify(list));
-      populateDatalist(listId, list);
-    }
-
-    function populateDatalist(id, list) {
-      const datalist = document.getElementById(id);
-      datalist.innerHTML = "";
-      list.forEach(value => {
-        datalist.innerHTML += `<option value="${value}">`;
-      });
-    }
-
-    window.onload = () => {
-		savedOrders.saryozek = JSON.parse(localStorage.getItem("saryozek_order"));
-		savedOrders.intercity = JSON.parse(localStorage.getItem("intercity_order"));
-
-		
-	
-      populateDatalist("fromList", JSON.parse(localStorage.getItem("recent_fromList") || "[]"));
-      populateDatalist("toList", JSON.parse(localStorage.getItem("recent_toList") || "[]"));
-      showTab(0);
-
-	  
-	  
-	  
-	  
-	  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-
-		document.getElementById("showUserId").textContent = parsedUser.id || "-";
-		document.getElementById("showFirstName").textContent = parsedUser.first_name || "-";
-		document.getElementById("showUsername").textContent = parsedUser.username ? "@" + parsedUser.username : "-";
-		document.getElementById("showPhone").textContent = parsedUser.phone || "-";
-
-	  
-	  
-
-		
-				
-		const saved = localStorage.getItem("user_data");
-		if (saved) {
-		  const user = JSON.parse(saved);
-		  document.getElementById("showUserId").textContent = user.id || "-";
-		  document.getElementById("showFirstName").textContent = user.first_name || "-";
-		  document.getElementById("showUsername").textContent = user.username ? "@" + user.username : "-";
-		  document.getElementById("showPhone").textContent = user.phone || "-";
-		} else {
-		  document.getElementById("userSummary").innerHTML = "<p style='color:red;'>🚫 Нет сохранённых данных пользователя</p>";
-		}
-		
-	
-		window.Telegram.WebApp.ready();
-
-
-
-
-
-		checkExistingOrder();
-		
-		
-		if (orderSnap.exists()) {
-		  const orderData = orderSnap.data();
-		  if (orderData.status === true) {
-			showSummary({
-			  from: orderData.from,
-			  to: orderData.to,
-			  note: orderData.note || "",
-			});
-		  }
-		}	  
-	  
-	  
-	  
-	  
-	  
-	  
-    }
-	
-	
-	
-	async function checkExistingOrder() {
-	  const user = window.Telegram.WebApp.initDataUnsafe?.user;
-	  const userId = user?.id || "anonymous";
-
-	  const orderSnap = await getDoc(doc(db, "orders", String(userId)));
-	  if (orderSnap.exists()) {
-		const orderData = orderSnap.data();
-		if (orderData.status === true) {
-		  showSummary({
-			from: orderData.from,
-			to: orderData.to,
-			note: orderData.note || "",
-		  });
-		}
-	  }
-	}
-
-	
-	
-	
-	
-	let touchStartX = 0;
-	let touchEndX = 0;
-
-	const swipeArea = document.querySelector('.viewport');
-
-	swipeArea.addEventListener('touchstart', e => {
-	  touchStartX = e.changedTouches[0].screenX;
-	});
-
-	swipeArea.addEventListener('touchend', e => {
-	  touchEndX = e.changedTouches[0].screenX;
-	  handleSwipe();
-	});
-
-	function handleSwipe() {
-	  const delta = touchEndX - touchStartX;
-	  const threshold = 50; // минимум 50px для свайпа
-
-	  if (Math.abs(delta) > threshold) {
-		if (delta > 0 && currentTab > 0) {
-		  showTab(currentTab - 1); // свайп вправо = предыдущая вкладка
-		} else if (delta < 0 && currentTab < 2) {
-		  showTab(currentTab + 1); // свайп влево = следующая вкладка
-		}
-	  }
-	}
-
-  </script>
   
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
+    authDomain: "saryozek-taxi.firebaseapp.com",
+    projectId: "saryozek-taxi",
+    storageBucket: "saryozek-taxi.firebasestorage.app",
+    messagingSenderId: "758286199664",
+    appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
+    measurementId: "G-7PMSMGB7K3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveToFirebase = async function (data) {
+    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const userId = savedUser.id;
+
+    if (!userId) {
+      console.warn("❌ userId отсутствует — заказ не сохранён");
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, "orders", String(userId)), {
+        ...data,
+        user_id: userId,
+        username: savedUser.username || null,
+        first_name: savedUser.first_name || null,
+        phone: savedUser.phone || null,
+        status: true,
+        createdAt: new Date().toISOString()
+      });
+      console.log("✅ Заказ сохранён в Firebase:", userId);
+    } catch (e) {
+      console.error("❌ Ошибка при сохранении в Firebase:", e);
+    }
+  };
+
+  window.checkExistingOrder = async function () {
+    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const userId = savedUser.id;
+    if (!userId) return;
+
+    try {
+      const snap = await getDoc(doc(db, "orders", String(userId)));
+      if (snap.exists()) {
+        const order = snap.data();
+        if (order.status === true) {
+          showSummary(order);
+        }
+      }
+    } catch (e) {
+      console.error("❌ Ошибка при получении заказа:", e);
+    }
+  };
+
+  // Когда всё загрузилось
+  window.addEventListener("load", () => {
+    window.Telegram.WebApp.ready();
+
+    const user = JSON.parse(localStorage.getItem("user_data") || "{}");
+
+    document.getElementById("showUserId").textContent = user.id || "-";
+    document.getElementById("showFirstName").textContent = user.first_name || "-";
+    document.getElementById("showUsername").textContent = user.username ? "@" + user.username : "-";
+    document.getElementById("showPhone").textContent = user.phone || "-";
+
+    checkExistingOrder();
+  });
+</script>
 
 
 </body>
