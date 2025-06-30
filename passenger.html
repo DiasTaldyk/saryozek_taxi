@@ -279,7 +279,18 @@
 		  
 		<div class="container" id="saryozekContainer" style="display: flex; flex-direction: column; min-height: 100%;"> 
 		  <div id="saryozekForm">
-            <h2>Заказ такси в Сарыозеке</h2>
+
+
+
+		  <div id="userSummary" style="background:#f2f2f2; padding:10px; border-radius:10px; margin-bottom:15px;">
+			  <p><strong>ID:</strong> <span id="showUserId">Загрузка...</span></p>
+			  <p><strong>Имя:</strong> <span id="showFirstName">-</span></p>
+			  <p><strong>Телефон:</strong> <span id="showPhone">-</span></p>
+			</div>
+
+			
+			
+			<h2>Заказ такси в Сарыозеке</h2>
 
             <label>Откуда:</label>
             <input list="fromList" id="from" placeholder="Укажите адрес отправления" />
@@ -583,60 +594,22 @@
 		
 		window.Telegram.WebApp.ready();
 
-		  const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+		
+		const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
 
-		  if (tgUser) {
-			document.getElementById("userId").textContent = tgUser.id || "-";
-			document.getElementById("firstName").textContent = tgUser.first_name || "-";
-			document.getElementById("lastName").textContent = tgUser.last_name || "-";
-			document.getElementById("username").textContent = tgUser.username
-			  ? "@" + tgUser.username
-			  : "-";
-		  }
+		if (tgUser) {
+		  document.getElementById("showUserId").textContent = tgUser.id || "-";
+		  document.getElementById("showFirstName").textContent = tgUser.first_name || "-";
+		} else {
+		  document.getElementById("showUserId").textContent = "нет данных";
+		  document.getElementById("showFirstName").textContent = "-";
+		}
 
-		  const storedPhone = localStorage.getItem("user_phone");
-		  const phoneInput = document.getElementById("phoneInput");
-		  const saveBtn = document.getElementById("saveBtn");
-		  const deleteBtn = document.getElementById("deleteBtn");
+		const savedPhone = localStorage.getItem("user_phone");
+		document.getElementById("showPhone").textContent = savedPhone || "-";
 
-		  if (storedPhone) {
-			phoneInput.value = storedPhone;
-			saveBtn.style.display = "none";
-			deleteBtn.style.display = "inline-block";
-		  }
-
-		  window.savePhone = function () {
-			const phone = phoneInput.value.trim();
-			if (!phone) {
-			  alert("Пожалуйста, введите номер телефона.");
-			  return;
-			}
-			localStorage.setItem("user_phone", phone);
-			document.getElementById("phoneStatus").textContent = "Номер сохранён ✅";
-			saveBtn.style.display = "none";
-			deleteBtn.style.display = "inline-block";
-		  };
-
-		  window.deletePhone = function () {
-			localStorage.removeItem("user_phone");
-			phoneInput.value = "";
-			document.getElementById("phoneStatus").textContent = "Номер удалён ❌";
-			saveBtn.style.display = "inline-block";
-			deleteBtn.style.display = "none";
-		  };
-
-		  phoneInput.addEventListener("focus", () => {
-			if (!phoneInput.value.startsWith("+7")) {
-			  phoneInput.value = "+7";
-			}
-		  });
-
-		  phoneInput.addEventListener("input", () => {
-			if (!phoneInput.value.startsWith("+7")) {
-			  phoneInput.value = "+7";
-			}
-		  });
-	  
+		
+		
 
 
 
