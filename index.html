@@ -1,55 +1,34 @@
-﻿<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Тест запуска через Telegram</title>
   <script>
-  if (!window.Telegram || !Telegram.WebApp.initData || Telegram.WebApp.initData.length === 0) {
-    document.body.innerHTML = "<h2>Бұл бетті тек Telegram боты арқылы ашуға болады 🚫</h2>";
-  }
-</script>
+    window.onload = () => {
+      if (!window.Telegram || !Telegram.WebApp) {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center;'>❌ Telegram WebApp НЕ найден.<br>Открой через Telegram-бота</h2>";
+        return;
+      }
 
+      Telegram.WebApp.ready();
 
-
-  
-  <title>Выбор роли</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(to bottom right, #4facfe, #00f2fe);
-    }
-
-    h1 {
-      color: white;
-      margin-bottom: 40px;
-    }
-
-    button {
-      padding: 15px 30px;
-      font-size: 18px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      background-color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #f0f0f0;
-    }
-  </style>
+      const user = Telegram.WebApp.initDataUnsafe?.user;
+      if (!user) {
+        document.body.innerHTML = "<h2 style='color:orange; text-align:center;'>⚠️ Данных пользователя нет.<br>Но Telegram WebApp есть!</h2>";
+      } else {
+        document.body.innerHTML = `
+          <h2 style="color:green; text-align:center;">✅ Всё работает!</h2>
+          <p style="text-align:center;">Привет, ${user.first_name} (${user.id})</p>
+          <div style="text-align:center;">
+            <a href="passenger.html" style="display:inline-block; padding:12px 20px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:8px;">➡ Перейти</a>
+          </div>
+        `;
+      }
+    };
+  </script>
 </head>
-<body>
-  <h1>Кто вы?</h1>
-  <button onclick="location.href='passenger.html'">🚶 Пассажир</button>
-  <button onclick="alert('Страница для таксиста в разработке 🚕')">🚖 Таксист</button>
+<body style="font-family:sans-serif; padding:30px; text-align:center; background: #dfefff;">
+  <p>⏳ Загрузка...</p>
 </body>
 </html>
