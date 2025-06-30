@@ -209,6 +209,8 @@
   
   
 <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
@@ -479,11 +481,7 @@
 		}
 
       const summary = document.getElementById("summary");
-      summary.innerHTML = `
-        <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
-        <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
-        ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
-      `;
+      summary.innerHTML = '  <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>       <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>  ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}';
       summary.style.display = "block";
 
       if (currentTab === 0) {
