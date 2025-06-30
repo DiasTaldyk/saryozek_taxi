@@ -1,97 +1,728 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Сарыөзек Такси</title>
+  <title>Пассажир</title>
+  <style>
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #4facfe;
+      color: white;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-text-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      white-space: nowrap;
+      margin-right: 10px;
+    }
+
+    .ticker {
+      overflow: hidden;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .ticker-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 15s linear infinite;
+      color: white;
+      font-size: 14px;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      padding-top: 30px;
+    }
+
+    .content {
+      display: flex;
+      transition: transform 0.3s ease;
+      height: 100%;
+      width: 300vw;
+    }
+
+    .tab-page {
+      min-width: 100vw;
+     
+      box-sizing: border-box;
+    
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      margin: 40px auto 60px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #4facfe;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00c6ff;
+    }
+
+    .quick-btn {
+      background: #ff9800;
+    }
+
+    .quick-btn:hover {
+      background: #ffa726;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #4facfe;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #00c6ff;
+    }
+
+    .order-summary {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      max-width: 90%;
+      display: none;
+    }
+
+    .order-summary p {
+      margin: 5px 0;
+    }
+
+    .order-summary::before {
+      content: "Ваш заказ";
+      display: block;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .location-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: url('https://cdn-icons-png.flaticon.com/512/684/684908.png') no-repeat center;
+      background-size: contain;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    .cancel-btn, .cancel-btn-mg {
+	  background: #f44336;
+	  display: none;
+	  width: 100%;
+	  max-width: 600px;
+	  margin: 30px auto 70px;
+	  border-radius: 8px;
+	}
+
+
+    .cancel-btn:hover, .cancel-btn-mg:hover {
+      background: #e53935;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
-      authDomain: "saryozek-taxi.firebaseapp.com",
-      projectId: "saryozek-taxi",
-      storageBucket: "saryozek-taxi.appspot.com",
-      messagingSenderId: "758286199664",
-      appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
-      measurementId: "G-7PMSMGB7K3"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
+    authDomain: "saryozek-taxi.firebaseapp.com",
+    projectId: "saryozek-taxi",
+    storageBucket: "saryozek-taxi.firebasestorage.app",
+    messagingSenderId: "758286199664",
+    appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
+    measurementId: "G-7PMSMGB7K3"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Функция сохранения в Firebase
+  window.saveToFirebase = async (data) => {
+    try {
+      await addDoc(collection(db, "orders"), {
+        ...data,
+        createdAt: new Date().toISOString()
+      });
+      console.log("✅ Заказ отправлен в Firebase");
+    } catch (e) {
+      console.error("❌ Ошибка при отправке в Firebase:", e);
+    }
+  };
+</script>
+
+  
+  
+  
+  
+  </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Пассажир</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #4facfe;
+      color: white;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .ticker {
+      overflow: hidden;
+      white-space: nowrap;
+      flex: 1;
+      margin-left: 20px;
+    }
+
+    .ticker-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 15s linear infinite;
+      color: white;
+      font-size: 14px;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      padding-top: 30px;
+    }
+
+    .content {
+      display: flex;
+      transition: transform 0.3s ease;
+      height: 100%;
+      width: 300vw;
+    }
+
+    .tab-page {
+      min-width: 100vw;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding-bottom: 100px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      margin: 40px auto 60px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #4facfe;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00c6ff;
+    }
+
+    .quick-btn {
+      background: #ff9800;
+    }
+
+    .quick-btn:hover {
+      background: #ffa726;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #4facfe;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #00c6ff;
+    }
+
+    .order-summary {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      max-width: 90%;
+      display: none;
+    }
+
+    .order-summary p {
+      margin: 5px 0;
+    }
+
+    .order-summary::before {
+      content: "Ваш заказ";
+      display: block;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .location-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: url('https://cdn-icons-png.flaticon.com/512/684/684908.png') no-repeat center;
+      background-size: contain;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    .cancel-btn {
+	  background: #f44336;
+	  display: none;
+	  width: 100%;
+	  max-width: 600px;
+	  margin: 20px auto 0;
+	  border-radius: 8px;
+	  z-index: 1;
+	}
+
+
+
+    .cancel-btn:hover {
+      background: #e53935;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+
+
+<body>
+  <header>
+    <div class="logo">Сарыөзек Такси</div>
+    <div class="ticker">
+      <div class="ticker-text">📞 Колл-центр: +7 777 123 4567 — Быстрый и надёжный сервис!</div>
+    </div>
+  </header>
+
+  <div class="order-summary" id="summary"></div>
+
+  <div class="viewport">
+    <div class="content" id="content">
+      <div class="tab-page">
+        <div class="container" id="saryozekContainer" style="display: flex; flex-direction: column; min-height: 100%;">
+          <div id="saryozekForm">
+            <h2>Заказ такси в Сарыозеке</h2>
+
+            <label>Откуда:</label>
+            <input list="fromList" id="from" placeholder="Укажите адрес отправления" />
+            <datalist id="fromList"></datalist>
+
+            <label>Куда:</label>
+            <input list="toList" id="to" placeholder="Укажите адрес назначения" />
+            <datalist id="toList"></datalist>
+
+            <label>Примечание:</label>
+            <textarea id="note" placeholder="Например: позвоните заранее..."></textarea>
+
+            <button onclick="orderTaxi()" id="orderBtn">🚕 Заказать такси</button>
+
+            <hr />
+
+            <button class="quick-btn" onclick="orderQuick()" id="quickBtn">📍 Нужен такси по локации</button>
+          </div>
+		  
+		   <div style="margin-top: auto; padding-bottom: 80px;">
+			<button class="cancel-btn" onclick="cancelOrder()" id="cancelBtn">❌ Отменить</button>
+		   </div>
+		  
+        </div>
+      </div>
+
+      <div class="tab-page">
+        
+		<div class="container" id="intercityContainer" style="display: flex; flex-direction: column; min-height: 100%;">
+          <div id="intercityForm">
+            <h2>🛣️ Межгород</h2>
+
+            <label>Откуда:</label>
+            <select id="fromCity" onchange="updateToCityOptions()">
+              <option disabled selected>Выберите город</option>
+            </select>
+
+            <label>Куда:</label>
+            <select id="toCity">
+              <option disabled selected>Выберите город</option>
+            </select>
+
+            <label>Цена (тг):</label>
+            <input type="number" id="price" placeholder="Введите цену" />
+
+            <label>Дата и время:</label>
+            <input type="datetime-local" id="tripDate" />
+
+            <button onclick="orderIntercity()">🚐 Заказать междугороднее такси</button>
+          </div>
+		  <div style="margin-top: auto; padding-bottom: 80px;">
+			<button class="cancel-btn" onclick="cancelOrder()" id="cancelBtnIntercity">❌ Отменить</button>
+		  </div>
+        </div>
+      </div>
+
+      <div class="tab-page">
+        <div class="container">
+          <h2>👤 Профиль</h2>
+          <p>Регистрация через Telegram будет добавлена.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">Сарыозек</div>
+    <div class="tab" onclick="showTab(1)">Межгород</div>
+    <div class="tab" onclick="showTab(2)">Профиль</div>
+  </div>
+
+  <script>
+   // стало:
+	let savedOrders = {
+	  saryozek: null,
+	  intercity: null
+	};
+    const cities = ["Жаркент", "Конаев", "Сарыозек", "Талдыкорган", "Алматы"];
+    const fromCity = document.getElementById("fromCity");
+    const toCity = document.getElementById("toCity");
+
+    cities.forEach(city => {
+      const option = new Option(city, city);
+      fromCity.add(option.cloneNode(true));
+      toCity.add(option.cloneNode(true));
+    });
+
+    function updateToCityOptions() {
+      const selected = fromCity.value;
+      toCity.innerHTML = "<option disabled selected>Выберите город</option>";
+      cities.filter(c => c !== selected).forEach(city => {
+        toCity.add(new Option(city, city));
+      });
+    }
+
+    let currentTab = 0;
+    const content = document.getElementById("content");
+
+    function showTab(index) {
+      content.style.transition = "transform 0.3s ease";
+      requestAnimationFrame(() => {
+        content.style.transform = `translateX(-${index * 100}vw)`;
+      });
+      document.querySelectorAll(".tab").forEach((tab, i) => {
+        tab.classList.toggle("active", i === index);
+      });
+      currentTab = index;
+      restoreOrderUI();
+    }
+
+    function restoreOrderUI() {
+      document.getElementById("summary").style.display = "none";
+      document.getElementById("saryozekForm").classList.remove("hidden");
+      document.getElementById("intercityForm").classList.remove("hidden");
+      document.getElementById("cancelBtn").style.display = "none";
+      document.getElementById("cancelBtnIntercity").style.display = "none";
+
+      if (currentTab === 0 && savedOrders.saryozek) {
+		  showSummary(savedOrders.saryozek);
+		} else if (currentTab === 1 && savedOrders.intercity) {
+		  showSummary(savedOrders.intercity);
+		}
+
+    }
+
+    function showSummary(data) {
+      if (currentTab === 0) {
+		  savedOrders.saryozek = data;
+		  localStorage.setItem("saryozek_order", JSON.stringify(data));
+		} else if (currentTab === 1) {
+		  savedOrders.intercity = data;
+		  localStorage.setItem("intercity_order", JSON.stringify(data));
+		}
+
+      const summary = document.getElementById("summary");
+      summary.innerHTML = `
+        <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
+        <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
+        ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
+      `;
+      summary.style.display = "block";
+
+      if (currentTab === 0) {
+        document.getElementById("saryozekForm").classList.add("hidden");
+        document.getElementById("cancelBtn").style.display = "block";
+      } else if (currentTab === 1) {
+        document.getElementById("intercityForm").classList.add("hidden");
+        document.getElementById("cancelBtnIntercity").style.display = "block";
+      }
+    }
+
+    function cancelOrder() {
+     if (currentTab === 0) {
+		  savedOrders.saryozek = null;
+		  localStorage.removeItem("saryozek_order");
+		} else if (currentTab === 1) {
+		  savedOrders.intercity = null;
+		  localStorage.removeItem("intercity_order");
+		}
+
+      document.getElementById("summary").style.display = "none";
+      document.getElementById("saryozekForm").classList.remove("hidden");
+      document.getElementById("intercityForm").classList.remove("hidden");
+      document.getElementById("cancelBtn").style.display = "none";
+      document.getElementById("cancelBtnIntercity").style.display = "none";
+    }
+
+    function orderTaxi() { 
+	  const from = document.getElementById("from").value.trim();
+	  const to = document.getElementById("to").value.trim();
+	  const note = document.getElementById("note").value.trim();
+
+	  if (!from) {
+		alert("Пожалуйста, укажите адрес отправления.");
+		//alert("Пожалуйста, заполните поля 'Откуда' и 'Куда'.");
+		return;
+	  }
+
+	  saveRecentAddress("fromList", from);
+	  saveRecentAddress("toList", to);
+
+	  getLocation(location => {
+		const order = {
+		  from,
+		  to,
+		  note,
+		  type: "saryozek",
+		  location: location
+			? { lat: location.latitude, lng: location.longitude }
+			: null,
+		  createdAt: new Date().toISOString()
+		};
+
+		showSummary(order);
+		saveToFirebase(order);
+		alert("Заказ оформлен (форма)");
+	  });
+	}
+
+
+
+
+    function orderQuick() {
+      getLocation(location => {
+        showSummary({ from: "Моё местоположение", to: "-", note: "Быстрый вызов" });
+        alert("Быстрый заказ оформлен");
+      });
+    }
+
+    function orderIntercity() {
+	  const from = fromCity.value;
+	  const to = toCity.value;
+	  const price = document.getElementById("price").value.trim();
+	  const dateTime = document.getElementById("tripDate").value;
+
+	  if (!from || !to || !price || !dateTime) {
+		alert("Пожалуйста, заполните все поля для межгорода.");
+		return;
+	  }
+
+	  getLocation(location => {
+		showSummary({ from, to, note: `Цена: ${price} тг. Время: ${dateTime}` });
+		alert("Межгород оформлен");
+	  });
+	}
+
 
     function getLocation(callback) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => callback({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-          err => {
-            alert("❌ Геолокация не разрешена. Заказ невозможен.");
-            callback(null);
-          }
+          err => alert("Не удалось получить локацию")
         );
       } else {
-        alert("❌ Геолокация не поддерживается");
-        callback(null);
+        alert("Геолокация не поддерживается");
       }
     }
 
-    window.onload = () => {
-      if (!window.Telegram || !window.Telegram.WebApp || !Telegram.WebApp.initDataUnsafe?.user) {
-        document.body.innerHTML = "<h2 style='color:red; text-align:center; padding:40px;'>🚫 Откройте через Telegram<br>Пожалуйста, запустите это приложение через Telegram-бота.</h2>";
-        return;
-      }
+    function saveRecentAddress(listId, value) {
+      if (!value) return;
+      let key = "recent_" + listId;
+      let list = JSON.parse(localStorage.getItem(key) || "[]");
+      list = [value, ...list.filter(v => v !== value)].slice(0, 5);
+      localStorage.setItem(key, JSON.stringify(list));
+      populateDatalist(listId, list);
+    }
 
-      Telegram.WebApp.ready();
-
-      document.getElementById("orderBtn").addEventListener("click", async () => {
-        const from = document.getElementById("from").value.trim();
-        const to = document.getElementById("to").value.trim();
-
-        if (!from) {
-          alert("❗ Пожалуйста, укажите адрес отправления.");
-          return;
-        }
-
-        getLocation(async location => {
-          if (!location) return;
-
-          const telegramId = Telegram.WebApp.initDataUnsafe.user.id.toString();
-          const phone = new URLSearchParams(window.location.search).get("phone") || "неизвестен";
-
-          const order = {
-            from,
-            to,
-            location: {
-              lat: location.latitude,
-              lng: location.longitude
-            },
-            clientId: telegramId,
-            phone: phone,
-            type: "saryozek",
-            createdAt: new Date().toISOString()
-          };
-
-          try {
-            await setDoc(doc(db, "orders", telegramId), order);
-            alert("✅ Заказ успешно оформлен!");
-          } catch (e) {
-            alert("❌ Ошибка при сохранении заказа в Firebase");
-            console.error(e);
-          }
-        });
+    function populateDatalist(id, list) {
+      const datalist = document.getElementById(id);
+      datalist.innerHTML = "";
+      list.forEach(value => {
+        datalist.innerHTML += `<option value="${value}">`;
       });
-    };
+    }
+
+    window.onload = () => {
+		savedOrders.saryozek = JSON.parse(localStorage.getItem("saryozek_order"));
+		savedOrders.intercity = JSON.parse(localStorage.getItem("intercity_order"));
+
+	
+	
+      populateDatalist("fromList", JSON.parse(localStorage.getItem("recent_fromList") || "[]"));
+      populateDatalist("toList", JSON.parse(localStorage.getItem("recent_toList") || "[]"));
+      showTab(0);
+    }
+	
+	
+	
+	
+	
+	let touchStartX = 0;
+	let touchEndX = 0;
+
+	const swipeArea = document.querySelector('.viewport');
+
+	swipeArea.addEventListener('touchstart', e => {
+	  touchStartX = e.changedTouches[0].screenX;
+	});
+
+	swipeArea.addEventListener('touchend', e => {
+	  touchEndX = e.changedTouches[0].screenX;
+	  handleSwipe();
+	});
+
+	function handleSwipe() {
+	  const delta = touchEndX - touchStartX;
+	  const threshold = 50; // минимум 50px для свайпа
+
+	  if (Math.abs(delta) > threshold) {
+		if (delta > 0 && currentTab > 0) {
+		  showTab(currentTab - 1); // свайп вправо = предыдущая вкладка
+		} else if (delta < 0 && currentTab < 2) {
+		  showTab(currentTab + 1); // свайп влево = следующая вкладка
+		}
+	  }
+	}
+
   </script>
-</head>
-<body style="font-family:sans-serif; padding:20px;">
-  <h2>🚕 Заказ такси — Сарыөзек</h2>
-  <label>Откуда:</label>
-  <input type="text" id="from" placeholder="Например: возле ЦОН" />
-
-  <label>Куда (необязательно):</label>
-  <input type="text" id="to" placeholder="Например: базар" />
-
-  <button id="orderBtn" style="margin-top:20px; padding:12px; font-size:16px;">🚖 Заказать такси</button>
 </body>
 </html>
