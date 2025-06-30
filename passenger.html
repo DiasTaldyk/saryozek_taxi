@@ -447,7 +447,7 @@
     function showTab(index) {
       content.style.transition = "transform 0.3s ease";
       requestAnimationFrame(() => {
-        content.style.transform = translateX(-${index * 100}vw);
+        content.style.transform = `translateX(-${index * 100}vw)`;
       });
       document.querySelectorAll(".tab").forEach((tab, i) => {
         tab.classList.toggle("active", i === index);
@@ -481,11 +481,11 @@
 		}
 
       const summary = document.getElementById("summary");
-      summary.innerHTML = 
+      summary.innerHTML = `
         <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
         <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
-        ${data.note ? <p><strong>Примечание:</strong> ${data.note}</p> : ""}
-      ;
+        ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
+      `;
       summary.style.display = "block";
 
       if (currentTab === 0) {
@@ -567,7 +567,7 @@
 	  }
 
 	  getLocation(location => {
-		showSummary({ from, to, note: Цена: ${price} тг. Время: ${dateTime} });
+		showSummary({ from, to, note: `Цена: ${price} тг. Время: ${dateTime}` });
 		alert("Межгород оформлен");
 	  });
 	}
@@ -597,7 +597,7 @@
       const datalist = document.getElementById(id);
       datalist.innerHTML = "";
       list.forEach(value => {
-        datalist.innerHTML += <option value="${value}">;
+        datalist.innerHTML += `<option value="${value}">`;
       });
     }
 
