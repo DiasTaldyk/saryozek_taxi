@@ -209,27 +209,24 @@
   
   
 <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   import {
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc
+    getFirestore, doc, setDoc, getDoc
   } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    // ... другие параметры Firebase
+    apiKey: "...",
+    authDomain: "...",
+    ...
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ✅ Сохраняем заказ в Firebase
   window.saveToFirebase = async function (data) {
     const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
     const userId = savedUser.id;
@@ -255,7 +252,6 @@
     }
   };
 
-  // ✅ Проверяем наличие заказа при загрузке
   window.checkExistingOrder = async function () {
     const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
     const userId = savedUser.id;
@@ -267,7 +263,7 @@
       if (snap.exists()) {
         const order = snap.data();
         if (order.status === true) {
-          window.showSummary(order); // вызываем глобальную функцию
+          showSummary(order);
         }
       }
     } catch (e) {
@@ -275,6 +271,7 @@
     }
   };
 </script>
+
 
   
   
@@ -450,7 +447,7 @@
     function showTab(index) {
       content.style.transition = "transform 0.3s ease";
       requestAnimationFrame(() => {
-        content.style.transform = `translateX(-${index * 100}vw)`;
+        content.style.transform = translateX(-${index * 100}vw);
       });
       document.querySelectorAll(".tab").forEach((tab, i) => {
         tab.classList.toggle("active", i === index);
@@ -484,11 +481,11 @@
 		}
 
       const summary = document.getElementById("summary");
-      summary.innerHTML = `
+      summary.innerHTML = 
         <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
         <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
-        ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
-      `;
+        ${data.note ? <p><strong>Примечание:</strong> ${data.note}</p> : ""}
+      ;
       summary.style.display = "block";
 
       if (currentTab === 0) {
@@ -570,7 +567,7 @@
 	  }
 
 	  getLocation(location => {
-		showSummary({ from, to, note: `Цена: ${price} тг. Время: ${dateTime}` });
+		showSummary({ from, to, note: Цена: ${price} тг. Время: ${dateTime} });
 		alert("Межгород оформлен");
 	  });
 	}
@@ -600,7 +597,7 @@
       const datalist = document.getElementById(id);
       datalist.innerHTML = "";
       list.forEach(value => {
-        datalist.innerHTML += `<option value="${value}">`;
+        datalist.innerHTML += <option value="${value}">;
       });
     }
 
@@ -645,7 +642,23 @@
 		window.Telegram.WebApp.ready();
 
 
+
+
+
+		checkExistingOrder();
 		
+		
+		if (orderSnap.exists()) {
+		  const orderData = orderSnap.data();
+		  if (orderData.status === true) {
+			showSummary({
+			  from: orderData.from,
+			  to: orderData.to,
+			  note: orderData.note || "",
+			});
+		  }
+		}	  
+	  
 	  
 	  
 	  
@@ -655,6 +668,23 @@
 	
 	
 	
+	async function checkExistingOrder() {
+	  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+	  const userId = user?.id || "anonymous";
+
+	  const orderSnap = await getDoc(doc(db, "orders", String(userId)));
+	  if (orderSnap.exists()) {
+		const orderData = orderSnap.data();
+		if (orderData.status === true) {
+		  showSummary({
+			from: orderData.from,
+			to: orderData.to,
+			note: orderData.note || "",
+		  });
+		}
+	  }
+	}
+
 	
 	
 	
