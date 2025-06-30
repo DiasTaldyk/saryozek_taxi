@@ -205,11 +205,11 @@
 
     .hidden { display: none !important; }
   </style>
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
+  
   const firebaseConfig = {
     apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
     authDomain: "saryozek-taxi.firebaseapp.com",
@@ -222,9 +222,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
-  // Функция сохранения в Firebase
-  import { setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
 window.saveToFirebase = async (data) => {
   try {
