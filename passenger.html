@@ -590,10 +590,18 @@
 	  
 	  
 	  
+	  
+	  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+
+		document.getElementById("showUserId").textContent = parsedUser.id || "-";
+		document.getElementById("showFirstName").textContent = parsedUser.first_name || "-";
+		document.getElementById("showUsername").textContent = parsedUser.username ? "@" + parsedUser.username : "-";
+		document.getElementById("showPhone").textContent = parsedUser.phone || "-";
+
+	  
+	  
 
 		
-		window.Telegram.WebApp.ready();
-
 				
 		const saved = localStorage.getItem("user_data");
 		if (saved) {
@@ -605,9 +613,10 @@
 		} else {
 		  document.getElementById("userSummary").innerHTML = "<p style='color:red;'>🚫 Нет сохранённых данных пользователя</p>";
 		}
+		
+	
+		window.Telegram.WebApp.ready();
 
-		
-		
 
 
 
