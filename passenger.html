@@ -13,6 +13,7 @@
 	    display: flex;
 	    flex-direction: column;
 	    overflow: hidden;
+		padding-top: 20px; /* 👈 удалить эту строку */
 	   
     }
 
@@ -24,7 +25,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: env(safe-area-inset-top, 20px); /* 👈 это безопасный отступ */
+      
     }
 
     .logo-text-container {
@@ -228,189 +229,7 @@
   
   
   </head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Пассажир</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    header {
-      background: #4facfe;
-      color: white;
-      padding: 10px 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    .ticker {
-      overflow: hidden;
-      white-space: nowrap;
-      flex: 1;
-      margin-left: 20px;
-    }
-
-    .ticker-text {
-      display: inline-block;
-      padding-left: 100%;
-      animation: scroll-left 15s linear infinite;
-      color: white;
-      font-size: 14px;
-    }
-
-    @keyframes scroll-left {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-
-    .viewport {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-      padding-top: 30px;
-    }
-
-    .content {
-      display: flex;
-      transition: transform 0.3s ease;
-      height: 100%;
-      width: 300vw;
-    }
-
-    .tab-page {
-      min-width: 100vw;
-      overflow-y: auto;
-      box-sizing: border-box;
-      padding-bottom: 100px;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 600px;
-      margin: 40px auto 60px;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    input, select, textarea, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      background: #4facfe;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #00c6ff;
-    }
-
-    .quick-btn {
-      background: #ff9800;
-    }
-
-    .quick-btn:hover {
-      background: #ffa726;
-    }
-
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      background: #4facfe;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      z-index: 1000;
-    }
-
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 15px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background: #00c6ff;
-    }
-
-    .order-summary {
-      position: fixed;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      padding: 10px 20px;
-      border-radius: 10px;
-      z-index: 1000;
-      max-width: 90%;
-      display: none;
-    }
-
-    .order-summary p {
-      margin: 5px 0;
-    }
-
-    .order-summary::before {
-      content: "Ваш заказ";
-      display: block;
-      font-weight: bold;
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-
-    .location-icon {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      background: url('https://cdn-icons-png.flaticon.com/512/684/684908.png') no-repeat center;
-      background-size: contain;
-      vertical-align: middle;
-      margin-right: 5px;
-    }
-
-    .cancel-btn {
-	  background: #f44336;
-	  display: none;
-	  width: 100%;
-	  max-width: 600px;
-	  margin: 20px auto 0;
-	  border-radius: 8px;
-	  z-index: 1;
-	}
-
-
-
-    .cancel-btn:hover {
-      background: #e53935;
-    }
-
-    .hidden { display: none !important; }
-  </style>
-</head>
+ 
 
 
 <body>
