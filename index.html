@@ -113,21 +113,34 @@
 
       // Подтверждение
       window.confirmData = function () {
-        const phone = phoneInput.value.trim();
-        if (!phone || phone.length < 12) {
-          alert("Введите корректный номер");
-          return;
-        }
+	  const phone = phoneInput.value.trim();
+	  if (!phone || phone.length < 12) {
+		alert("Введите корректный номер");
+		return;
+	  }
 
-        localStorage.setItem(storageKey, phone);
-        confirmBtn.textContent = "✅ Данные сохранены";
-        confirmBtn.disabled = true;
-		
-		// Переход на страницу пассажира
-		window.location.href = "passenger.html";
+	  // Данные пользователя из Telegram
+	  const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
-        //alert("Ваши данные сохранены. Спасибо!");
-      };
+	  // Собираем объект
+	  const userData = {
+		id: user?.id || null,
+		username: user?.username || null,
+		first_name: user?.first_name || null,
+		last_name: user?.last_name || null,
+		phone: phone
+	  };
+
+	  // Сохраняем всё как JSON
+	  localStorage.setItem("user_data", JSON.stringify(userData));
+
+	  // Меняем текст и переходим
+	  confirmBtn.textContent = "✅ Данные сохранены";
+	  confirmBtn.disabled = true;
+
+	  window.location.href = "passenger.html";
+	};
+
     };
   </script>
 
