@@ -4,6 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>
+  if (!window.Telegram || !Telegram.WebApp.initData || Telegram.WebApp.initData.length === 0) {
+    document.body.innerHTML = "<h2>Бұл бетті тек Telegram боты арқылы ашуға болады 🚫</h2>";
+  }
+</script>
+
+
+
+  
   <title>Выбор роли</title>
   <style>
     body {
