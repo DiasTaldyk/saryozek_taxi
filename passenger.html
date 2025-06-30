@@ -281,10 +281,10 @@
 		  <div id="saryozekForm">
 
 
-
 		  <div id="userSummary" style="background:#f2f2f2; padding:10px; border-radius:10px; margin-bottom:15px;">
-			  <p><strong>ID:</strong> <span id="showUserId">Загрузка...</span></p>
+			  <p><strong>ID:</strong> <span id="showUserId">-</span></p>
 			  <p><strong>Имя:</strong> <span id="showFirstName">-</span></p>
+			  <p><strong>Username:</strong> <span id="showUsername">-</span></p>
 			  <p><strong>Телефон:</strong> <span id="showPhone">-</span></p>
 			</div>
 
@@ -581,7 +581,7 @@
 		savedOrders.saryozek = JSON.parse(localStorage.getItem("saryozek_order"));
 		savedOrders.intercity = JSON.parse(localStorage.getItem("intercity_order"));
 
-	
+		
 	
       populateDatalist("fromList", JSON.parse(localStorage.getItem("recent_fromList") || "[]"));
       populateDatalist("toList", JSON.parse(localStorage.getItem("recent_toList") || "[]"));
@@ -594,19 +594,17 @@
 		
 		window.Telegram.WebApp.ready();
 
-		
-		const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-
-		if (tgUser) {
-		  document.getElementById("showUserId").textContent = tgUser.id || "-";
-		  document.getElementById("showFirstName").textContent = tgUser.first_name || "-";
+				
+		const saved = localStorage.getItem("user_data");
+		if (saved) {
+		  const user = JSON.parse(saved);
+		  document.getElementById("showUserId").textContent = user.id || "-";
+		  document.getElementById("showFirstName").textContent = user.first_name || "-";
+		  document.getElementById("showUsername").textContent = user.username ? "@" + user.username : "-";
+		  document.getElementById("showPhone").textContent = user.phone || "-";
 		} else {
-		  document.getElementById("showUserId").textContent = "нет данных";
-		  document.getElementById("showFirstName").textContent = "-";
+		  document.getElementById("userSummary").innerHTML = "<p style='color:red;'>🚫 Нет сохранённых данных пользователя</p>";
 		}
-
-		const savedPhone = localStorage.getItem("user_phone");
-		document.getElementById("showPhone").textContent = savedPhone || "-";
 
 		
 		
