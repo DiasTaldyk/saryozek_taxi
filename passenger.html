@@ -229,24 +229,25 @@
 
   // Функция сохранения заказа
   window.saveToFirebase = async function(data) {
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const userId = tgUser?.id || "anonymous";
+  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const userId = savedUser.id || "anonymous";
 
-    try {
-      await db.collection("orders").doc(String(userId)).set({
-        ...data,
-        status: true,
-        user_id: userId,
-        username: tgUser?.username || null,
-        first_name: tgUser?.first_name || null,
-        phone: localStorage.getItem("user_phone") || null,
-        createdAt: new Date().toISOString()
-      });
-      console.log("✅ Заказ сохранён в Firebase:", userId);
-    } catch (e) {
-      console.error("❌ Ошибка при сохранении:", e);
-    }
-  };
+  try {
+    await db.collection("orders").doc(String(userId)).set({
+      ...data,
+      status: true,
+      user_id: userId,
+      username: savedUser.username || null,
+      first_name: savedUser.first_name || null,
+      phone: savedUser.phone || null,
+      createdAt: new Date().toISOString()
+    });
+    console.log("✅ Заказ сохранён в Firebase:", userId);
+  } catch (e) {
+    console.error("❌ Ошибка при сохранении в Firebase:", e);
+  }
+};
+
 </script>
 
   
