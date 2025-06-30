@@ -3,75 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Тест запуска через Telegram</title>
+  <title>Telegram WebApp – Профиль</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       font-family: sans-serif;
       padding: 30px;
-      text-align: center;
-      background: #dfefff;
+      background: #eaf6ff;
     }
-    h1, h2 {
-      margin-top: 10px;
+
+    h2 {
+      margin-bottom: 20px;
     }
-    .green { color: green; }
-    .red { color: red; }
-    .orange { color: orange; }
-    a.button {
-      display: inline-block;
-      padding: 12px 20px;
-      background-color: #4CAF50;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
+
+    label {
+      font-weight: bold;
+    }
+
+    .field {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    input[type="tel"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
       margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
 
-  <h1>🔍 Данные Telegram</h1>
-  <div id="tgData">
-    <p><strong>ID:</strong> <span id="tg_id">?</span></p>
-    <p><strong>Имя:</strong> <span id="tg_first">?</span></p>
-    <p><strong>Фамилия:</strong> <span id="tg_last">?</span></p>
-    <p><strong>Username:</strong> <span id="tg_user">?</span></p>
+  <h2>👤 Ваши данные</h2>
+
+  <div class="field"><label>ID:</label> <span id="userId">-</span></div>
+  <div class="field"><label>Имя:</label> <span id="firstName">-</span></div>
+  <div class="field"><label>Фамилия:</label> <span id="lastName">-</span></div>
+  <div class="field"><label>Username:</label> <span id="username">-</span></div>
+
+  <div class="field">
+    <label>Номер телефона:</label>
+    <input type="tel" id="phoneInput" placeholder="+7 777 123 4567" />
   </div>
 
-  <p id="status">⏳ Загрузка...</p>
-
-  <div id="continue" style="display:none;">
-    <a href="passenger.html" class="button">➡ Перейти</a>
-  </div>
+  <button id="confirmBtn" disabled onclick="confirmData()">✅ Подтвердить данные</button>
 
   <script>
     window.onload = () => {
-      const status = document.getElementById("status");
-      const tg = window.Telegram?.WebApp;
-
-      if (!tg) {
-        status.innerHTML = "<span class='red'>❌ Telegram WebApp НЕ найден. Открой через Telegram-бота</span>";
-        return;
-      }
-
+      const tg = window.Telegram.WebApp;
       tg.ready();
-      const user = tg.initDataUnsafe?.user;
 
-      if (!user) {
-        status.innerHTML = "<span class='orange'>⚠️ Данных пользователя нет. Но Telegram WebApp найден</span>";
-        return;
+      const user = tg.initDataUnsafe?.user;
+      const phoneInput = document.getElementById("phoneInput");
+      const confirmBtn = document.getElementById("confirmBtn");
+
+      const currentUserId = user?.id || "no_id";
+
+      // Показываем данные Telegram
+      document.getElementById("userId").textContent = user?.id || "-";
+      document.getElementById("firstName").textContent = user?.first_name || "-";
+      document.getElementById("lastName").textContent = user?.last_name || "-";
+      document.getElementById("username").textContent = user?.username ? "@" + user.username : "-";
+
+      // Ключ для хранения (по user.id)
+      const storageKey = "phone_" + currentUserId;
+
+      // Заполняем, если уже был сохранён номер
+      const storedPhone = localStorage.getItem(storageKey);
+      if (storedPhone) {
+        phoneInput.value = storedPhone;
+        confirmBtn.disabled = false;
       }
 
-      // Показываем данные
-      document.getElementById("tg_id").textContent = user.id || "-";
-      document.getElementById("tg_first").textContent = user.first_name || "-";
-      document.getElementById("tg_last").textContent = user.last_name || "-";
-      document.getElementById("tg_user").textContent = user.username ? "@" + user.username : "-";
+      // +7 автоматически
+      phoneInput.addEventListener("focus", () => {
+        if (!phoneInput.value.startsWith("+7")) {
+          phoneInput.value = "+7";
+        }
+      });
 
-      // Успешный запуск
-      status.innerHTML = "<span class='green'>✅ Всё работает! Открыто через Telegram</span>";
-      document.getElementById("continue").style.display = "block";
+      // Автоматическое включение кнопки
+      phoneInput.addEventListener("input", () => {
+        if (phoneInput.value.length >= 12) {
+          confirmBtn.disabled = false;
+        } else {
+          confirmBtn.disabled = true;
+        }
+        if (!phoneInput.value.startsWith("+7")) {
+          phoneInput.value = "+7";
+        }
+      });
+
+      // Подтверждение
+      window.confirmData = function () {
+        const phone = phoneInput.value.trim();
+        if (!phone || phone.length < 12) {
+          alert("Введите корректный номер");
+          return;
+        }
+
+        localStorage.setItem(storageKey, phone);
+        confirmBtn.textContent = "✅ Данные сохранены";
+        confirmBtn.disabled = true;
+
+        alert("Ваши данные сохранены. Спасибо!");
+      };
     };
   </script>
 
