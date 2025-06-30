@@ -205,11 +205,15 @@
 
     .hidden { display: none !important; }
   </style>
+
+  
+  
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
 
-  <script type="module">
-  
+<script>
+  // Firebase init
   const firebaseConfig = {
     apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
     authDomain: "saryozek-taxi.firebaseapp.com",
@@ -220,31 +224,29 @@
     measurementId: "G-7PMSMGB7K3"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-window.saveToFirebase = async (data) => {
-  try {
-    const user = window.Telegram.WebApp.initDataUnsafe?.user;
-    const userId = user?.id || "anonymous";
+  // Функция сохранения заказа
+  window.saveToFirebase = async function(data) {
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const userId = tgUser?.id || "anonymous";
 
-    await setDoc(doc(db, "orders", String(userId)), {
-      ...data,
-      status: true,
-      user_id: userId,
-      username: user?.username || null,
-      first_name: user?.first_name || null,
-      phone: localStorage.getItem("user_phone") || null,
-      createdAt: new Date().toISOString()
-    });
-
-    console.log("✅ Заказ сохранён с ID:", userId);
-  } catch (e) {
-    console.error("❌ Ошибка при сохранении в Firebase:", e);
-  }
-};
-
-
+    try {
+      await db.collection("orders").doc(String(userId)).set({
+        ...data,
+        status: true,
+        user_id: userId,
+        username: tgUser?.username || null,
+        first_name: tgUser?.first_name || null,
+        phone: localStorage.getItem("user_phone") || null,
+        createdAt: new Date().toISOString()
+      });
+      console.log("✅ Заказ сохранён в Firebase:", userId);
+    } catch (e) {
+      console.error("❌ Ошибка при сохранении:", e);
+    }
+  };
 </script>
 
   
