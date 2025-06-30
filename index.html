@@ -1,0 +1,46 @@
+﻿<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Выбор роли</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to bottom right, #4facfe, #00f2fe);
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Кто вы?</h1>
+  <button onclick="location.href='passenger.html'">🚶 Пассажир</button>
+  <button onclick="alert('Страница для таксиста в разработке 🚕')">🚖 Таксист</button>
+</body>
+</html>

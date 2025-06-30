@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сарыөзек Такси</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
+      authDomain: "saryozek-taxi.firebaseapp.com",
+      projectId: "saryozek-taxi",
+      storageBucket: "saryozek-taxi.appspot.com",
+      messagingSenderId: "758286199664",
+      appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
+      measurementId: "G-7PMSMGB7K3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function getLocation(callback) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => callback({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+          err => {
+            alert("❌ Геолокация не разрешена. Заказ невозможен.");
+            callback(null);
+          }
+        );
+      } else {
+        alert("❌ Геолокация не поддерживается");
+        callback(null);
+      }
+    }
+
+    window.onload = () => {
+      if (!window.Telegram || !window.Telegram.WebApp || !Telegram.WebApp.initDataUnsafe?.user) {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center; padding:40px;'>🚫 Откройте через Telegram<br>Пожалуйста, запустите это приложение через Telegram-бота.</h2>";
+        return;
+      }
+
+      Telegram.WebApp.ready();
+
+      document.getElementById("orderBtn").addEventListener("click", async () => {
+        const from = document.getElementById("from").value.trim();
+        const to = document.getElementById("to").value.trim();
+
+        if (!from) {
+          alert("❗ Пожалуйста, укажите адрес отправления.");
+          return;
+        }
+
+        getLocation(async location => {
+          if (!location) return;
+
+          const telegramId = Telegram.WebApp.initDataUnsafe.user.id.toString();
+          const phone = new URLSearchParams(window.location.search).get("phone") || "неизвестен";
+
+          const order = {
+            from,
+            to,
+            location: {
+              lat: location.latitude,
+              lng: location.longitude
+            },
+            clientId: telegramId,
+            phone: phone,
+            type: "saryozek",
+            createdAt: new Date().toISOString()
+          };
+
+          try {
+            await setDoc(doc(db, "orders", telegramId), order);
+            alert("✅ Заказ успешно оформлен!");
+          } catch (e) {
+            alert("❌ Ошибка при сохранении заказа в Firebase");
+            console.error(e);
+          }
+        });
+      });
+    };
+  </script>
+</head>
+<body style="font-family:sans-serif; padding:20px;">
+  <h2>🚕 Заказ такси — Сарыөзек</h2>
+  <label>Откуда:</label>
+  <input type="text" id="from" placeholder="Например: возле ЦОН" />
+
+  <label>Куда (необязательно):</label>
+  <input type="text" id="to" placeholder="Например: базар" />
+
+  <button id="orderBtn" style="margin-top:20px; padding:12px; font-size:16px;">🚖 Заказать такси</button>
+</body>
+</html>
