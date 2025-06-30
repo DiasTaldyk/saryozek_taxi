@@ -235,32 +235,47 @@
 
   // Замените текущую функцию saveToFirebase на эту:
 	async function saveToFirebase(data) {
+	  // Получаем данные пользователя из localStorage
+	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+	  
+	  // Формируем полные данные для сохранения
+	  const fullData = {
+		...data, // Данные заказа
+		user_id: savedUser.id || null,
+		first_name: savedUser.first_name || null,
+		username: savedUser.username ? "@" + savedUser.username : null,
+		phone: savedUser.phone || null,
+		status: true,
+		createdAt: new Date().toISOString()
+	  };
+
 	  try {
-		const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-		
-		const orderData = {
-		  ...data,
-		  createdAt: new Date().toISOString()
-		};
-		
-		// Добавляем информацию о пользователе, если она есть
-		if (savedUser.id) {
-		  orderData.user_id = savedUser.id;
-		  orderData.username = savedUser.username || null;
-		  orderData.first_name = savedUser.first_name || null;
-		  orderData.phone = savedUser.phone || null;
-		}
-		
-		// Используем addDoc вместо doc().set() для создания нового документа
-		await db.collection("orders").add(orderData);
-		console.log("✅ Заказ сохранён в Firebase");
+		// Сохраняем в Firebase
+		await db.collection("orders").doc(String(savedUser.id)).set(fullData, { merge: true });
+		console.log("✅ Заказ сохранён в Firebase:", savedUser.id);
 	  } catch (e) {
 		console.error("❌ Ошибка при сохранении:", e);
 	  }
 	}
 
-	// Удалите функцию checkExistingOrder, так как она больше не нужна
+	
+	
+	async function checkExistingOrder() {
+	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+	  if (!savedUser.id) return;
 
+	  try {
+		const doc = await db.collection("orders").doc(String(savedUser.id)).get();
+		if (doc.exists) {
+		  const order = doc.data();
+		  if (order.status === true) {
+			showSummary(order);
+		  }
+		}
+	  } catch (e) {
+		console.error("❌ Ошибка при получении заказа:", e);
+	  }
+	}
   
 </script>
 
