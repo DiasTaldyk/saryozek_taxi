@@ -122,8 +122,11 @@
         localStorage.setItem(storageKey, phone);
         confirmBtn.textContent = "✅ Данные сохранены";
         confirmBtn.disabled = true;
+		
+		// Переход на страницу пассажира
+		window.location.href = "passenger.html";
 
-        alert("Ваши данные сохранены. Спасибо!");
+        //alert("Ваши данные сохранены. Спасибо!");
       };
     };
   </script>
