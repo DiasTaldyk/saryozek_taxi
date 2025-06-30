@@ -224,17 +224,30 @@
   const db = getFirestore(app);
 
   // Функция сохранения в Firebase
-  window.saveToFirebase = async (data) => {
-    try {
-      await addDoc(collection(db, "orders"), {
-        ...data,
-        createdAt: new Date().toISOString()
-      });
-      console.log("✅ Заказ отправлен в Firebase");
-    } catch (e) {
-      console.error("❌ Ошибка при отправке в Firebase:", e);
-    }
-  };
+  import { setDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+window.saveToFirebase = async (data) => {
+  try {
+    const user = window.Telegram.WebApp.initDataUnsafe?.user;
+    const userId = user?.id || "anonymous";
+
+    await setDoc(doc(db, "orders", String(userId)), {
+      ...data,
+      status: true,
+      user_id: userId,
+      username: user?.username || null,
+      first_name: user?.first_name || null,
+      phone: localStorage.getItem("user_phone") || null,
+      createdAt: new Date().toISOString()
+    });
+
+    console.log("✅ Заказ сохранён с ID:", userId);
+  } catch (e) {
+    console.error("❌ Ошибка при сохранении в Firebase:", e);
+  }
+};
+
+
 </script>
 
   
@@ -563,6 +576,97 @@
       populateDatalist("fromList", JSON.parse(localStorage.getItem("recent_fromList") || "[]"));
       populateDatalist("toList", JSON.parse(localStorage.getItem("recent_toList") || "[]"));
       showTab(0);
+
+	  
+	  
+	  
+
+		
+		window.Telegram.WebApp.ready();
+
+		  const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+
+		  if (tgUser) {
+			document.getElementById("userId").textContent = tgUser.id || "-";
+			document.getElementById("firstName").textContent = tgUser.first_name || "-";
+			document.getElementById("lastName").textContent = tgUser.last_name || "-";
+			document.getElementById("username").textContent = tgUser.username
+			  ? "@" + tgUser.username
+			  : "-";
+		  }
+
+		  const storedPhone = localStorage.getItem("user_phone");
+		  const phoneInput = document.getElementById("phoneInput");
+		  const saveBtn = document.getElementById("saveBtn");
+		  const deleteBtn = document.getElementById("deleteBtn");
+
+		  if (storedPhone) {
+			phoneInput.value = storedPhone;
+			saveBtn.style.display = "none";
+			deleteBtn.style.display = "inline-block";
+		  }
+
+		  window.savePhone = function () {
+			const phone = phoneInput.value.trim();
+			if (!phone) {
+			  alert("Пожалуйста, введите номер телефона.");
+			  return;
+			}
+			localStorage.setItem("user_phone", phone);
+			document.getElementById("phoneStatus").textContent = "Номер сохранён ✅";
+			saveBtn.style.display = "none";
+			deleteBtn.style.display = "inline-block";
+		  };
+
+		  window.deletePhone = function () {
+			localStorage.removeItem("user_phone");
+			phoneInput.value = "";
+			document.getElementById("phoneStatus").textContent = "Номер удалён ❌";
+			saveBtn.style.display = "inline-block";
+			deleteBtn.style.display = "none";
+		  };
+
+		  phoneInput.addEventListener("focus", () => {
+			if (!phoneInput.value.startsWith("+7")) {
+			  phoneInput.value = "+7";
+			}
+		  });
+
+		  phoneInput.addEventListener("input", () => {
+			if (!phoneInput.value.startsWith("+7")) {
+			  phoneInput.value = "+7";
+			}
+		  });
+	  
+
+
+
+
+
+	  import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+		// После Telegram.WebApp.ready()
+		const user = window.Telegram.WebApp.initDataUnsafe?.user;
+		const userId = user?.id || "anonymous";
+
+		// Получаем заказ из Firestore
+		const orderSnap = await getDoc(doc(db, "orders", String(userId)));
+		if (orderSnap.exists()) {
+		  const orderData = orderSnap.data();
+		  if (orderData.status === true) {
+			showSummary({
+			  from: orderData.from,
+			  to: orderData.to,
+			  note: orderData.note || "",
+			});
+		  }
+		}	  
+	  
+	  
+	  
+	  
+	  
+	  
     }
 	
 	
@@ -598,65 +702,7 @@
 
   </script>
   
-<script>
-window.onload = () => {
-  window.Telegram.WebApp.ready();
 
-  const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-
-  if (tgUser) {
-    document.getElementById("userId").textContent = tgUser.id || "-";
-    document.getElementById("firstName").textContent = tgUser.first_name || "-";
-    document.getElementById("lastName").textContent = tgUser.last_name || "-";
-    document.getElementById("username").textContent = tgUser.username
-      ? "@" + tgUser.username
-      : "-";
-  }
-
-  const storedPhone = localStorage.getItem("user_phone");
-  const phoneInput = document.getElementById("phoneInput");
-  const saveBtn = document.getElementById("saveBtn");
-  const deleteBtn = document.getElementById("deleteBtn");
-
-  if (storedPhone) {
-    phoneInput.value = storedPhone;
-    saveBtn.style.display = "none";
-    deleteBtn.style.display = "inline-block";
-  }
-
-  window.savePhone = function () {
-    const phone = phoneInput.value.trim();
-    if (!phone) {
-      alert("Пожалуйста, введите номер телефона.");
-      return;
-    }
-    localStorage.setItem("user_phone", phone);
-    document.getElementById("phoneStatus").textContent = "Номер сохранён ✅";
-    saveBtn.style.display = "none";
-    deleteBtn.style.display = "inline-block";
-  };
-
-  window.deletePhone = function () {
-    localStorage.removeItem("user_phone");
-    phoneInput.value = "";
-    document.getElementById("phoneStatus").textContent = "Номер удалён ❌";
-    saveBtn.style.display = "inline-block";
-    deleteBtn.style.display = "none";
-  };
-
-  phoneInput.addEventListener("focus", () => {
-    if (!phoneInput.value.startsWith("+7")) {
-      phoneInput.value = "+7";
-    }
-  });
-
-  phoneInput.addEventListener("input", () => {
-    if (!phoneInput.value.startsWith("+7")) {
-      phoneInput.value = "+7";
-    }
-  });
-};
-</script>
 
 
 </body>
