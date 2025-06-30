@@ -1,69 +1,62 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Выбор роли</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script> <!-- ВАЖНО -->
-
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(to bottom right, #4facfe, #00f2fe);
-    }
-
-    h1 {
-      color: white;
-      margin-bottom: 40px;
-    }
-
-    button {
-      padding: 15px 30px;
-      font-size: 18px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      background-color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #f0f0f0;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
-
+  <title>Тест запуска через Telegram</title>
   <script>
     window.onload = () => {
-      const tg = window.Telegram.WebApp;
-      tg.expand(); // Расширяем WebApp (не обязательно, но красиво)
-
-      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-
-      if (!user) {
-        document.body.innerHTML = "<h2 style='color:red; text-align:center; padding:40px;'>🚫 Это приложение можно открыть только через Telegram-бота</h2>";
+      if (!window.Telegram || !Telegram.WebApp) {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center;'>❌ Telegram WebApp НЕ найден.<br>Открой через Telegram-бота</h2>";
         return;
       }
 
-      document.getElementById("main").classList.remove("hidden");
+      Telegram.WebApp.ready();
+
+      const user = Telegram.WebApp.initDataUnsafe?.user;
+      if (!user) {
+        document.body.innerHTML = "<h2 style='color:orange; text-align:center;'>⚠️ Данных пользователя нет.<br>Но Telegram WebApp есть!</h2>";
+      } else {
+        document.body.innerHTML = `
+          <h2 style="color:green; text-align:center;">✅ Всё работает!</h2>
+          <p style="text-align:center;">Привет, ${user.first_name} (${user.id})</p>
+          <div style="text-align:center;">
+            <a href="passenger.html" style="display:inline-block; padding:12px 20px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:8px;">➡ Перейти</a>
+          </div>
+        `;
+      }
     };
   </script>
 </head>
-<body>
-  <div id="main" class="hidden">
-    <h1>Кто вы?</h1>
-    <button onclick="location.href='passenger.html'">🚶 Пассажир</button>
-    <button onclick="alert('Страница для таксиста в разработке 🚕')">🚖 Таксист</button>
-  </div>
+<body style="font-family:sans-serif; padding:30px; text-align:center; background: #dfefff;">
+<h1>🔍 Данные Telegram</h1>
+<div id="tgData">
+  <p><strong>ID:</strong> <span id="tg_id">?</span></p>
+  <p><strong>Имя:</strong> <span id="tg_first">?</span></p>
+  <p><strong>Фамилия:</strong> <span id="tg_last">?</span></p>
+  <p><strong>Username:</strong> <span id="tg_user">?</span></p>
+</div>
+
+
+  <p>⏳ Загрузка...</p>
+  
+  
+  <script>
+window.onload = () => {
+  if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+    const user = window.Telegram.WebApp.initDataUnsafe.user;
+    document.getElementById("tg_id").textContent = user.id || "-";
+    document.getElementById("tg_first").textContent = user.first_name || "-";
+    document.getElementById("tg_last").textContent = user.last_name || "-";
+    document.getElementById("tg_user").textContent = user.username
+      ? "@" + user.username
+      : "-";
+  } else {
+    document.getElementById("tgData").innerHTML =
+      "<p style='color:red;'>🚫 Нет данных. Открой через Telegram Web App</p>";
+  }
+};
+</script>
+
 </body>
 </html>
