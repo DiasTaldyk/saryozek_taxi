@@ -642,15 +642,9 @@ window.saveToFirebase = async (data) => {
 
 
 
-
-	  import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-		// После Telegram.WebApp.ready()
-		const user = window.Telegram.WebApp.initDataUnsafe?.user;
-		const userId = user?.id || "anonymous";
-
-		// Получаем заказ из Firestore
-		const orderSnap = await getDoc(doc(db, "orders", String(userId)));
+		checkExistingOrder();
+		
+		
 		if (orderSnap.exists()) {
 		  const orderData = orderSnap.data();
 		  if (orderData.status === true) {
@@ -669,6 +663,25 @@ window.saveToFirebase = async (data) => {
 	  
     }
 	
+	
+	
+	async function checkExistingOrder() {
+	  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+	  const userId = user?.id || "anonymous";
+
+	  const orderSnap = await getDoc(doc(db, "orders", String(userId)));
+	  if (orderSnap.exists()) {
+		const orderData = orderSnap.data();
+		if (orderData.status === true) {
+		  showSummary({
+			from: orderData.from,
+			to: orderData.to,
+			note: orderData.note || "",
+		  });
+		}
+	  }
+	}
+
 	
 	
 	
