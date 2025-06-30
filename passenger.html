@@ -342,7 +342,23 @@
 		
 		<div class="container">
           <h2>👤 Профиль</h2>
-          <p>Регистрация через Telegram будет добавлена.</p>
+			<div id="userInfo">
+			  <p><strong>ID:</strong> <span id="userId">Загрузка...</span></p>
+			  <p><strong>Имя:</strong> <span id="firstName">-</span></p>
+			  <p><strong>Фамилия:</strong> <span id="lastName">-</span></p>
+			  <p><strong>Username:</strong> <span id="username">-</span></p>
+			</div>
+
+			<hr />
+
+			<label for="phoneInput"><strong>Ваш номер телефона:</strong></label>
+			<input type="tel" id="phoneInput" placeholder="+7 777 123 4567" />
+			<button id="saveBtn" onclick="savePhone()">✅ Подтвердить</button>
+			<button id="deleteBtn" onclick="deletePhone()" style="display: none;">❌ Удалить номер</button>
+			<p id="phoneStatus" style="color: green;"></p>
+
+
+		
         </div>
       </div>
     </div>
@@ -581,5 +597,67 @@
 	}
 
   </script>
+  
+<script>
+window.onload = () => {
+  window.Telegram.WebApp.ready();
+
+  const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+
+  if (tgUser) {
+    document.getElementById("userId").textContent = tgUser.id || "-";
+    document.getElementById("firstName").textContent = tgUser.first_name || "-";
+    document.getElementById("lastName").textContent = tgUser.last_name || "-";
+    document.getElementById("username").textContent = tgUser.username
+      ? "@" + tgUser.username
+      : "-";
+  }
+
+  const storedPhone = localStorage.getItem("user_phone");
+  const phoneInput = document.getElementById("phoneInput");
+  const saveBtn = document.getElementById("saveBtn");
+  const deleteBtn = document.getElementById("deleteBtn");
+
+  if (storedPhone) {
+    phoneInput.value = storedPhone;
+    saveBtn.style.display = "none";
+    deleteBtn.style.display = "inline-block";
+  }
+
+  window.savePhone = function () {
+    const phone = phoneInput.value.trim();
+    if (!phone) {
+      alert("Пожалуйста, введите номер телефона.");
+      return;
+    }
+    localStorage.setItem("user_phone", phone);
+    document.getElementById("phoneStatus").textContent = "Номер сохранён ✅";
+    saveBtn.style.display = "none";
+    deleteBtn.style.display = "inline-block";
+  };
+
+  window.deletePhone = function () {
+    localStorage.removeItem("user_phone");
+    phoneInput.value = "";
+    document.getElementById("phoneStatus").textContent = "Номер удалён ❌";
+    saveBtn.style.display = "inline-block";
+    deleteBtn.style.display = "none";
+  };
+
+  phoneInput.addEventListener("focus", () => {
+    if (!phoneInput.value.startsWith("+7")) {
+      phoneInput.value = "+7";
+    }
+  });
+
+  phoneInput.addEventListener("input", () => {
+    if (!phoneInput.value.startsWith("+7")) {
+      phoneInput.value = "+7";
+    }
+  });
+};
+</script>
+
+
 </body>
 </html>
