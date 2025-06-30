@@ -1,99 +1,69 @@
-﻿<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Математика тренажёр</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script> <!-- Добавлено -->
+  <title>Выбор роли</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script> <!-- ВАЖНО -->
+
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to bottom right, #4facfe, #00f2fe);
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+
+  <script>
+    window.onload = () => {
+      const tg = window.Telegram.WebApp;
+      tg.expand(); // Расширяем WebApp (не обязательно, но красиво)
+
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+
+      if (!user) {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center; padding:40px;'>🚫 Это приложение можно открыть только через Telegram-бота</h2>";
+        return;
+      }
+
+      document.getElementById("main").classList.remove("hidden");
+    };
+  </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Тренажёр по математике</h1>
-
-    <div id="setup">
-      <label>Операция:
-        <select id="operation">
-          <option value="+">Сложение</option>
-          <option value="-">Вычитание</option>
-          <option value="*">Умножение</option>
-          <option value="/">Деление</option>
-        </select>
-      </label>
-      <label>Количество задач:
-        <input type="number" id="numQuestions" value="5" min="1" max="100" />
-      </label>
-      <label>Диапазон чисел:
-        от <input type="number" id="minValue" value="1" />
-        до <input type="number" id="maxValue" value="10" />
-      </label>
-
-      <button onclick="startQuiz()">Начать</button>
-    </div>
-
-    <div id="quiz" style="display: none;">
-      <p id="timer">Осталось времени: 10 сек.</p>
-      <p id="question"></p>
-      <input type="number" id="answer" placeholder="Твой ответ" onkeydown="handleKey(event)" inputmode="decimal" />
-      <button onclick="submitAnswer()">Ответить</button>
-      <p id="score-box">Правильных: <span id="score">0</span></p>
-    </div>
-
-    <div id="result" style="display: none;">
-      <label>Фильтр по дате: <input type="date" id="filterDate" onchange="filterHistory()" /></label>
-      <div id="historyTable"></div>
-
-      <h2>Результат</h2>
-      <p id="finalScore"></p>
-      <div id="review"></div>
-
-      <button onclick="clearHistory()">Сбросить историю</button>
-
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <canvas id="progressChart" width="400" height="200"></canvas>
-
-      <button onclick="restart()">Начать заново</button>
-    </div>
+  <div id="main" class="hidden">
+    <h1>Кто вы?</h1>
+    <button onclick="location.href='passenger.html'">🚶 Пассажир</button>
+    <button onclick="alert('Страница для таксиста в разработке 🚕')">🚖 Таксист</button>
   </div>
-
-  <script src="script.js"></script>
-
-  <!-- 🔒 Проверка доступа по Telegram ID -->
-  <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    const allowedUserIds = [1290894872, 886699157, 1769921919, 7810511589]; // 🔁 ЗАМЕНИ СЮДА свои user.id
-    const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-
-    if (!user) {
-      // Пользователь не открыл через Telegram WebApp
-      document.body.innerHTML = `
-        <div style="text-align:center;padding:40px;font-family:sans-serif">
-          <h2>🚫 Откройте через Telegram</h2>
-          <p>Пожалуйста, запустите это приложение через Telegram-бота.</p>
-        </div>
-      `;
-      return;
-    }
-
-    if (!allowedUserIds.includes(user.id)) {
-      // Пользователь не в списке разрешённых
-      document.body.innerHTML = `
-        <div style="text-align:center;padding:40px;font-family:sans-serif">
-          <h2>🚫 Доступ запрещён</h2>
-          <p>Ваш Telegram ID: <b>${user.id}</b></p>
-          <p>Обратитесь к администратору.</p>
-        </div>
-      `;
-      return;
-    }
-
-    // Если пользователь разрешён — можно продолжать
-    console.log("✅ Доступ разрешён для: " + user.username + " (ID: " + user.id + ")");
-  });
-</script>
-
 </body>
 </html>
