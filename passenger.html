@@ -209,46 +209,67 @@
   
   
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js"></script>
 
-<script>
-  // Firebase init
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import {
+    getFirestore, doc, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
   const firebaseConfig = {
-    apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
-    authDomain: "saryozek-taxi.firebaseapp.com",
-    projectId: "saryozek-taxi",
-    storageBucket: "saryozek-taxi.firebasestorage.app",
-    messagingSenderId: "758286199664",
-    appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
-    measurementId: "G-7PMSMGB7K3"
+    apiKey: "...",
+    authDomain: "...",
+    ...
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  // Функция сохранения заказа
-  window.saveToFirebase = async function(data) {
-  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-  const userId = savedUser.id || "anonymous";
+  window.saveToFirebase = async function (data) {
+    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const userId = savedUser.id;
 
-  try {
-    await db.collection("orders").doc(String(userId)).set({
-      ...data,
-      status: true,
-      user_id: userId,
-      username: savedUser.username || null,
-      first_name: savedUser.first_name || null,
-      phone: savedUser.phone || null,
-      createdAt: new Date().toISOString()
-    });
-    console.log("✅ Заказ сохранён в Firebase:", userId);
-  } catch (e) {
-    console.error("❌ Ошибка при сохранении в Firebase:", e);
-  }
-};
+    if (!userId) {
+      console.warn("❌ userId отсутствует");
+      return;
+    }
 
+    try {
+      await setDoc(doc(db, "orders", String(userId)), {
+        ...data,
+        user_id: userId,
+        username: savedUser.username || null,
+        first_name: savedUser.first_name || null,
+        phone: savedUser.phone || null,
+        status: true,
+        createdAt: new Date().toISOString()
+      });
+      console.log("✅ Заказ сохранён в Firebase:", userId);
+    } catch (e) {
+      console.error("❌ Ошибка при сохранении:", e);
+    }
+  };
+
+  window.checkExistingOrder = async function () {
+    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const userId = savedUser.id;
+
+    if (!userId) return;
+
+    try {
+      const snap = await getDoc(doc(db, "orders", String(userId)));
+      if (snap.exists()) {
+        const order = snap.data();
+        if (order.status === true) {
+          showSummary(order);
+        }
+      }
+    } catch (e) {
+      console.error("❌ Ошибка при получении заказа:", e);
+    }
+  };
 </script>
+
 
   
   
