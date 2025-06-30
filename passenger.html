@@ -233,49 +233,35 @@
   const app = firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  async function saveToFirebase(data) {
-    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const userId = savedUser.id;
+  // Замените текущую функцию saveToFirebase на эту:
+	async function saveToFirebase(data) {
+	  try {
+		const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+		
+		const orderData = {
+		  ...data,
+		  createdAt: new Date().toISOString()
+		};
+		
+		// Добавляем информацию о пользователе, если она есть
+		if (savedUser.id) {
+		  orderData.user_id = savedUser.id;
+		  orderData.username = savedUser.username || null;
+		  orderData.first_name = savedUser.first_name || null;
+		  orderData.phone = savedUser.phone || null;
+		}
+		
+		// Используем addDoc вместо doc().set() для создания нового документа
+		await db.collection("orders").add(orderData);
+		console.log("✅ Заказ сохранён в Firebase");
+	  } catch (e) {
+		console.error("❌ Ошибка при сохранении:", e);
+	  }
+	}
 
-    if (!userId) {
-      console.warn("❌ userId отсутствует");
-      return;
-    }
+	// Удалите функцию checkExistingOrder, так как она больше не нужна
 
-    try {
-      await db.collection("orders").doc(String(userId)).set({
-        ...data,
-        user_id: userId,
-        username: savedUser.username || null,
-        first_name: savedUser.first_name || null,
-        phone: savedUser.phone || null,
-        status: true,
-        createdAt: new Date().toISOString()
-      });
-      console.log("✅ Заказ сохранён в Firebase:", userId);
-    } catch (e) {
-      console.error("❌ Ошибка при сохранении:", e);
-    }
-  }
-
-  async function checkExistingOrder() {
-    const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const userId = savedUser.id;
-
-    if (!userId) return;
-
-    try {
-      const snap = await db.collection("orders").doc(String(userId)).get();
-      if (snap.exists) {
-        const order = snap.data();
-        if (order.status === true) {
-          showSummary(order);
-        }
-      }
-    } catch (e) {
-      console.error("❌ Ошибка при получении заказа:", e);
-    }
-  }
+  
 </script>
 
   
@@ -648,12 +634,6 @@
 
 
 
-
-
-		checkExistingOrder();
-		
-		
-		
 	  
 	  
 	  
