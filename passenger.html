@@ -275,6 +275,22 @@
 		console.error("❌ Ошибка при сохранении:", e);
 	  }
 	}
+	
+	
+	async function cancelOrderInFirebase() {
+	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+	  if (!savedUser.id) return;
+
+	  try {
+		await db.collection("orders").doc(String(savedUser.id)).update({
+		  status: false
+		});
+		console.log("🛑 Статус заказа обновлён на false");
+	  } catch (e) {
+		console.error("❌ Ошибка при отмене заказа:", e);
+	  }
+	}
+
 
 	
 	
@@ -527,6 +543,7 @@
 		  savedOrders.intercity = null;
 		  localStorage.removeItem("intercity_order");
 		}
+		cancelOrderInFirebase();
 
       document.getElementById("summary").style.display = "none";
       document.getElementById("saryozekForm").classList.remove("hidden");
