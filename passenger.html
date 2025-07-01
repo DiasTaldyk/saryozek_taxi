@@ -538,11 +538,26 @@
 	function showTab(index) {
 	  content.style.transition = "transform 0.3s ease";
 	  content.style.transform = `translateX(-${index * 100}vw)`;
+
 	  document.querySelectorAll(".tab").forEach((tab, i) => {
 		tab.classList.toggle("active", i === index);
 	  });
+
 	  currentTab = index;
+
+	  // Сначала скрываем карточку и оба cancelBtn
+	  document.getElementById("summary").style.display = "none";
+	  document.getElementById("cancelBtn").style.display = "none";
+	  document.getElementById("cancelBtnIntercity").style.display = "none";
+
+	  // Показываем карточку только если есть заказ в текущем табе
+	  if (currentTab === 0 && savedOrders.saryozek) {
+		showSummary(savedOrders.saryozek);
+	  } else if (currentTab === 1 && savedOrders.intercity) {
+		showSummary(savedOrders.intercity);
+	  }
 	}
+
 
 
     function restoreOrderUI() {
@@ -561,30 +576,24 @@
     }
 
     function showSummary(data) {
-      if (currentTab === 0) {
-		  savedOrders.saryozek = data;
-		  localStorage.setItem("saryozek_order", JSON.stringify(data));
-		} else if (currentTab === 1) {
-		  savedOrders.intercity = data;
-		  localStorage.setItem("intercity_order", JSON.stringify(data));
-		}
+	  const summary = document.getElementById("summary");
+	  summary.innerHTML = `
+		<p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
+		<p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
+		${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
+	  `;
+	  summary.style.display = "block";
 
-      const summary = document.getElementById("summary");
-      summary.innerHTML = `
-        <p><span class="location-icon"></span><strong>Откуда:</strong> ${data.from}</p>
-        <p><span class="location-icon"></span><strong>Куда:</strong> ${data.to}</p>
-        ${data.note ? `<p><strong>Примечание:</strong> ${data.note}</p>` : ""}
-      `;
-      summary.style.display = "block";
+	  if (currentTab === 0) {
+		document.getElementById("saryozekForm").classList.add("hidden");
+		document.getElementById("cancelBtn").style.display = "block";
+	  } else if (currentTab === 1) {
+		document.getElementById("intercityForm").classList.add("hidden");
+		document.getElementById("cancelBtnIntercity").style.display = "block";
+	  }
+	}
 
-      if (currentTab === 0) {
-        document.getElementById("saryozekForm").classList.add("hidden");
-        document.getElementById("cancelBtn").style.display = "block";
-      } else if (currentTab === 1) {
-        document.getElementById("intercityForm").classList.add("hidden");
-        document.getElementById("cancelBtnIntercity").style.display = "block";
-      }
-    }
+
 
     function cancelOrder(k) {
      if (currentTab === 0) {
