@@ -585,14 +585,25 @@
 	}
 
 
+	function orderQuick() {
+	  getLocation(location => {
+		const order = {
+		  from: "Моё местоположение",
+		  to: "-",
+		  note: "Быстрый вызов",
+		  type: "saryozek",
+		  location: location
+			? { lat: location.latitude, lng: location.longitude }
+			: null,
+		  createdAt: new Date().toISOString()
+		};
 
+		showSummary(order);
+		saveToFirebase(order); // ⬅️ добавили это
+		alert("Быстрый заказ оформлен");
+	  });
+	}
 
-    function orderQuick() {
-      getLocation(location => {
-        showSummary({ from: "Моё местоположение", to: "-", note: "Быстрый вызов" });
-        alert("Быстрый заказ оформлен");
-      });
-    }
 
     function orderIntercity() {
 	  const from = fromCity.value;
