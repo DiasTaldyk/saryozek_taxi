@@ -75,27 +75,23 @@
     }
 
     .viewport {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-      padding-top: 0px;
-	  -webkit-overflow-scrolling: touch;
-    }
+	  flex: 1;
+	  overflow: hidden;
+	  position: relative;
+	  padding-top: 30px;
+	}
 
     .content {
-      display: flex;
-      transition: transform 0.3s ease;
-      height: 100%;
-      width: 300vw;
-	  
-    }
+	  display: flex;
+	  transition: transform 0.3s ease;
+	  height: 100%;
+	  width: 300vw; /* если 3 вкладки */
+	}
 
-    .tab-page {
-      min-width: 100vw;
-     
-      box-sizing: border-box;
-    
-    }
+	.tab-page {
+	  min-width: 100vw;
+	  box-sizing: border-box;
+	}
 
     .container {
       width: 90%;
@@ -527,7 +523,7 @@
     let currentTab = 0;
     const content = document.getElementById("content");
 
-    function showTab(index) {
+    function showTab_old(index) {
       content.style.transition = "transform 0.3s ease";
       requestAnimationFrame(() => {
         content.style.transform = `translateX(-${index * 100}vw)`;
@@ -538,6 +534,16 @@
       currentTab = index;
       restoreOrderUI();
     }
+	
+	function showTab(index) {
+	  content.style.transition = "transform 0.3s ease";
+	  content.style.transform = `translateX(-${index * 100}vw)`;
+	  document.querySelectorAll(".tab").forEach((tab, i) => {
+		tab.classList.toggle("active", i === index);
+	  });
+	  currentTab = index;
+	}
+
 
     function restoreOrderUI() {
       document.getElementById("summary").style.display = "none";
@@ -807,8 +813,9 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => callback({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-          err => alert("Не удалось получить локацию")
-		  
+          err => {alert("Не удалось получить локацию");
+		  callback(null);
+		  }
         );
       } else {
         alert("Геолокация не поддерживается");
@@ -857,18 +864,7 @@
 	  
 
 		
-				
-		const saved = localStorage.getItem("user_data");
-		if (saved) {
-		  const user = JSON.parse(saved);
-		  document.getElementById("showUserId").textContent = user.id || "-";
-		  document.getElementById("showFirstName").textContent = user.first_name || "-";
-		  document.getElementById("showUsername").textContent = user.username ? "@" + user.username : "-";
-		  document.getElementById("showPhone").textContent = user.phone || "-";
-		} else {
-		  document.getElementById("userSummary").innerHTML = "<p style='color:red;'>🚫 Нет сохранённых данных пользователя</p>";
-		}
-		
+			
 	
 		window.Telegram.WebApp.ready();
 
@@ -903,16 +899,17 @@
 
 	function handleSwipe() {
 	  const delta = touchEndX - touchStartX;
-	  const threshold = 50; // минимум 50px для свайпа
+	  const threshold = 50; // минимум 50px
 
 	  if (Math.abs(delta) > threshold) {
 		if (delta > 0 && currentTab > 0) {
-		  showTab(currentTab - 1); // свайп вправо = предыдущая вкладка
+		  showTab(currentTab - 1); // свайп вправо
 		} else if (delta < 0 && currentTab < 2) {
-		  showTab(currentTab + 1); // свайп влево = следующая вкладка
+		  showTab(currentTab + 1); // свайп влево
 		}
 	  }
 	}
+
 
   </script>
   
