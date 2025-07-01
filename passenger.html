@@ -308,7 +308,7 @@
 
 	
 	
-	async function cancelOrderInFirebase() {
+	async function cancelOrderInFirebase_old() {
 	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
 	  if (!savedUser.id) return;
 
@@ -317,6 +317,20 @@
 		  status: false
 		});
 		console.log("🛑 Статус заказа обновлён на false");
+	  } catch (e) {
+		console.error("❌ Ошибка при отмене заказа:", e);
+	  }
+	}
+	
+	async function cancelOrderInFirebase(type = "orders") {
+	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+	  if (!savedUser.id) return;
+
+	  try {
+		await db.collection(type).doc(String(savedUser.id)).update({
+		  status: false
+		});
+		console.log(`🛑 Статус заказа из коллекции "${type}" обновлён на false`);
 	  } catch (e) {
 		console.error("❌ Ошибка при отмене заказа:", e);
 	  }
@@ -404,7 +418,7 @@
           </div>
 		  
 		   <div style="margin-top: auto; padding-bottom: 80px;">
-			<button class="cancel-btn" onclick="cancelOrder()" id="cancelBtn">❌ Отменить</button>
+			<button class="cancel-btn" onclick="cancelOrder('orders')" id="cancelBtn">❌ Отменить</button>
 		   </div>
 		  
         </div>
@@ -442,7 +456,7 @@
             <button onclick="orderIntercity()">🚐 Заказать междугороднее такси</button>
           </div>
 		  <div style="margin-top: auto; padding-bottom: 80px;">
-			<button class="cancel-btn" onclick="cancelOrder()" id="cancelBtnIntercity">❌ Отменить</button>
+			<button class="cancel-btn" onclick="cancelOrder('intercity_orders')" id="cancelBtnIntercity">❌ Отменить</button>
 		  </div>
         </div>
       </div>
@@ -566,7 +580,7 @@
       }
     }
 
-    function cancelOrder() {
+    function cancelOrder(k) {
      if (currentTab === 0) {
 		  savedOrders.saryozek = null;
 		  localStorage.removeItem("saryozek_order");
@@ -574,8 +588,12 @@
 		  savedOrders.intercity = null;
 		  localStorage.removeItem("intercity_order");
 		}
-		cancelOrderInFirebase();
-
+	if(k=="intercity_orders"){
+		cancelOrderInFirebase("intercity_orders");
+	}
+	else{
+		cancelOrderInFirebase("intercity_orders");
+	}
       document.getElementById("summary").style.display = "none";
       document.getElementById("saryozekForm").classList.remove("hidden");
       document.getElementById("intercityForm").classList.remove("hidden");
