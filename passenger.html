@@ -210,6 +210,13 @@
 	  display: none !important;
 	}
 
+	.tabs.tabs-above-keyboard {
+	  position: fixed;
+	  bottom: auto;
+	  top: auto;
+	  transform: translateY(-300px); /* 👈 Поднять на 300px — можешь скорректировать по тесту */
+	}
+
   </style>
 
   
@@ -701,23 +708,28 @@
   
 
 <script>
-	//для скрытия табс когда активен инпут
+//для скрытия табс когда активен инпут
+
   const inputs = document.querySelectorAll('input, textarea, select');
+  const tabs = document.querySelector('.tabs');
 
   inputs.forEach(el => {
     el.addEventListener('focus', () => {
-      document.body.classList.add('hide-tabs');
+      document.body.classList.add('hide-tabs'); // если хочешь скрывать
+      tabs.classList.add('tabs-above-keyboard'); // если хочешь ПОДНЯТЬ
     });
     el.addEventListener('blur', () => {
-      // Немного задержки, чтобы срабатывало корректно при смене полей
       setTimeout(() => {
-        if (!document.activeElement.matches('input, textarea, select')) {
+        const active = document.activeElement;
+        if (!active || !['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) {
           document.body.classList.remove('hide-tabs');
+          tabs.classList.remove('tabs-above-keyboard');
         }
       }, 100);
     });
   });
 </script>
+
 
 
 </body>
