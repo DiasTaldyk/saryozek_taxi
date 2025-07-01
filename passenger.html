@@ -222,6 +222,38 @@
 	  transform: translateY(-300px); /* 👈 Поднять на 300px — можешь скорректировать по тесту */
 	}
 
+	
+	
+	
+	.loader-overlay {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  background: rgba(0, 0, 0, 0.5);
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  z-index: 2000;
+	  display: none;
+	}
+
+	.loader {
+	  border: 5px solid #f3f3f3;
+	  border-top: 5px solid #4facfe;
+	  border-radius: 50%;
+	  width: 50px;
+	  height: 50px;
+	  animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+	  0% { transform: rotate(0deg); }
+	  100% { transform: rotate(360deg); }
+}
+	
+	
   </style>
 
   
@@ -253,12 +285,10 @@
 
   // Замените текущую функцию saveToFirebase на эту:
 	async function saveToFirebase(data) {
-	  // Получаем данные пользователя из localStorage
 	  const savedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
-	  
-	  // Формируем полные данные для сохранения
+
 	  const fullData = {
-		...data, // Данные заказа
+		...data,
 		user_id: savedUser.id || null,
 		first_name: savedUser.first_name || null,
 		username: savedUser.username ? "@" + savedUser.username : null,
@@ -268,13 +298,14 @@
 	  };
 
 	  try {
-		// Сохраняем в Firebase
-		await db.collection("orders").doc(String(savedUser.id)).set(fullData, { merge: true });
-		console.log("✅ Заказ сохранён в Firebase:", savedUser.id);
+		const collectionName = data.type === "intercity" ? "intercity_orders" : "orders";
+		await db.collection(collectionName).doc(String(savedUser.id)).set(fullData, { merge: true });
+		console.log(`✅ Заказ сохранён в Firebase (${collectionName}):`, savedUser.id);
 	  } catch (e) {
 		console.error("❌ Ошибка при сохранении:", e);
 	  }
 	}
+
 	
 	
 	async function cancelOrderInFirebase() {
@@ -552,7 +583,7 @@
       document.getElementById("cancelBtnIntercity").style.display = "none";
     }
 
-    function orderTaxi() { 
+    function orderTaxi_old() { 
 	  const from = document.getElementById("from").value.trim();
 	  const to = document.getElementById("to").value.trim();
 	  const note = document.getElementById("note").value.trim();
@@ -584,8 +615,57 @@
 	  });
 	}
 
+	
+	
+	function orderTaxi() { 
+	  const from = document.getElementById("from").value.trim();
+	  const to = document.getElementById("to").value.trim();
+	  const note = document.getElementById("note").value.trim();
 
-	function orderQuick() {
+	  if (!from) {
+		alert("Пожалуйста, укажите адрес отправления.");
+		return;
+	  }
+
+	  saveRecentAddress("fromList", from);
+	  saveRecentAddress("toList", to);
+
+	  showLoader(); // ← Показываем лоадер
+
+	  getLocation(location => {
+		const order = {
+		  from,
+		  to,
+		  note,
+		  type: "saryozek",
+		  location: location
+			? { lat: location.latitude, lng: location.longitude }
+			: null,
+		  createdAt: new Date().toISOString()
+		};
+
+		showSummary(order);
+
+		saveToFirebase(order)
+		  .then(() => {
+			alert("Заказ оформлен (форма)");
+		  })
+		  .catch(() => {
+			alert("Ошибка при сохранении заказа");
+		  })
+		  .finally(() => {
+			hideLoader(); // ← Скрываем лоадер после завершения
+		  });
+	  });
+	}
+
+	
+	
+	
+	
+	
+
+	function orderQuick_old() {
 	  getLocation(location => {
 		const order = {
 		  from: "Моё местоположение",
@@ -605,7 +685,7 @@
 	}
 
 
-    function orderIntercity() {
+    function orderIntercity_old() {
 	  const from = fromCity.value;
 	  const to = toCity.value;
 	  const price = document.getElementById("price").value.trim();
@@ -622,12 +702,98 @@
 	  });
 	}
 
+	
+	
+	
+	
+	
+	
+	function orderQuick() {
+	  showLoader(); // Показать лоадер
+
+	  getLocation(location => {
+		const order = {
+		  from: "Моё местоположение",
+		  to: "-",
+		  note: "Быстрый вызов",
+		  type: "saryozek",
+		  location: location
+			? { lat: location.latitude, lng: location.longitude }
+			: null,
+		  createdAt: new Date().toISOString()
+		};
+
+		showSummary(order);
+
+		saveToFirebase(order)
+		  .then(() => {
+			alert("Быстрый заказ оформлен");
+		  })
+		  .catch(() => {
+			alert("Ошибка при быстром заказе");
+		  })
+		  .finally(() => {
+			hideLoader(); // Скрыть лоадер
+		  });
+	  });
+	}
+	
+	
+	function orderIntercity() {
+	  const from = fromCity.value;
+	  const to = toCity.value;
+	  const price = document.getElementById("price").value.trim();
+	  const dateTime = document.getElementById("tripDate").value;
+
+	  if (!from || !to || !price || !dateTime) {
+		alert("Пожалуйста, заполните все поля для межгорода.");
+		return;
+	  }
+
+	  showLoader(); // Показать лоадер
+
+	  getLocation(location => {
+		const order = {
+		  from,
+		  to,
+		  note: `Цена: ${price} тг. Время: ${dateTime}`,
+		  type: "intercity",
+		  location: location
+			? { lat: location.latitude, lng: location.longitude }
+			: null,
+		  createdAt: new Date().toISOString()
+		};
+
+		showSummary(order);
+
+		saveToFirebase(order)
+		  .then(() => {
+			alert("Межгород оформлен");
+		  })
+		  .catch(() => {
+			alert("Ошибка при оформлении межгорода");
+		  })
+		  .finally(() => {
+			hideLoader(); // Скрыть лоадер
+		  });
+	  });
+	}
+
+	
+	
+	
+	
+	
+	
+	
+
 
     function getLocation(callback) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => callback({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
           err => alert("Не удалось получить локацию")
+		  
         );
       } else {
         alert("Геолокация не поддерживается");
@@ -766,8 +932,18 @@
       document.activeElement.blur();
     }
   });
+  
+  function showLoader() {
+  document.getElementById('loader').style.display = 'flex';
+}
+function hideLoader() {
+  document.getElementById('loader').style.display = 'none';
+}
 </script>
 
-
+<div class="loader-overlay" id="loader">
+  <div class="loader"></div>
+  <div style="color: white; margin-top: 20px;">Обработка заказа...</div>
+</div>
 </body>
 </html>
