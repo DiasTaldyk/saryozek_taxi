@@ -66,86 +66,81 @@
   <button id="confirmBtn" disabled onclick="confirmData()">✅ Подтвердить данные</button>
 
   <script>
-    window.onload = () => {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
+  window.onload = () => {
+    const tg = window.Telegram.WebApp;
+    tg.ready();
 
-      const user = tg.initDataUnsafe?.user;
-      const phoneInput = document.getElementById("phoneInput");
-      const confirmBtn = document.getElementById("confirmBtn");
+    const user = tg.initDataUnsafe?.user;
+    const phoneInput = document.getElementById("phoneInput");
+    const confirmBtn = document.getElementById("confirmBtn");
 
-      const currentUserId = user?.id || "no_id";
+    const currentUserId = user?.id || "no_id";
 
-      // Показываем данные Telegram
-      document.getElementById("userId").textContent = user?.id || "-";
-      document.getElementById("firstName").textContent = user?.first_name || "-";
-      document.getElementById("lastName").textContent = user?.last_name || "-";
-      document.getElementById("username").textContent = user?.username ? "@" + user.username : "-";
+    // Показываем данные Telegram
+    document.getElementById("userId").textContent = user?.id || "-";
+    document.getElementById("firstName").textContent = user?.first_name || "-";
+    document.getElementById("lastName").textContent = user?.last_name || "-";
+    document.getElementById("username").textContent = user?.username ? "@" + user.username : "-";
 
-      // Ключ для хранения (по user.id)
-      const storageKey = "phone_" + currentUserId;
+    // Пробуем достать сохранённые данные
+    const saved = localStorage.getItem("user_data");
+    if (saved) {
+      try {
+        const savedData = JSON.parse(saved);
+        console.log("Загружены данные из localStorage:", savedData);
+        if (savedData?.id === currentUserId && savedData?.phone) {
+          phoneInput.value = savedData.phone;
+          confirmBtn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Ошибка при разборе user_data:", e);
+      }
+    }
 
-      // Заполняем, если уже был сохранён номер
-      const storedPhone = localStorage.getItem(storageKey);
-      if (storedPhone) {
-        phoneInput.value = storedPhone;
-        confirmBtn.disabled = false;
+    // +7 автоматически
+    phoneInput.addEventListener("focus", () => {
+      if (!phoneInput.value.startsWith("+7")) {
+        phoneInput.value = "+7";
+      }
+    });
+
+    // Автоматическое включение кнопки
+    phoneInput.addEventListener("input", () => {
+      if (!phoneInput.value.startsWith("+7")) {
+        phoneInput.value = "+7";
+      }
+      confirmBtn.disabled = phoneInput.value.length < 12;
+    });
+
+    // Подтверждение
+    window.confirmData = function () {
+      const phone = phoneInput.value.trim();
+      if (!phone || phone.length < 12) {
+        alert("Введите корректный номер");
+        return;
       }
 
-      // +7 автоматически
-      phoneInput.addEventListener("focus", () => {
-        if (!phoneInput.value.startsWith("+7")) {
-          phoneInput.value = "+7";
-        }
-      });
+      // Новый объект с данными
+      const userData = {
+        id: user?.id || null,
+        username: user?.username || null,
+        first_name: user?.first_name || null,
+        last_name: user?.last_name || null,
+        phone: phone
+      };
 
-      // Автоматическое включение кнопки
-      phoneInput.addEventListener("input", () => {
-        if (phoneInput.value.length >= 12) {
-          confirmBtn.disabled = false;
-        } else {
-          confirmBtn.disabled = true;
-        }
-        if (!phoneInput.value.startsWith("+7")) {
-          phoneInput.value = "+7";
-        }
-      });
+      // Сохраняем
+      localStorage.setItem("user_data", JSON.stringify(userData));
+      console.log("Сохранены данные:", userData);
 
-      // Подтверждение
-      window.confirmData = function () {
-	  const phone = phoneInput.value.trim();
-	  if (!phone || phone.length < 12) {
-		alert("Введите корректный номер");
-		return;
-	  }
+      confirmBtn.textContent = "✅ Данные сохранены";
+      confirmBtn.disabled = true;
 
-	  // Данные пользователя из Telegram
-	  const user = window.Telegram.WebApp.initDataUnsafe?.user;
-
-	  // Собираем объект
-	  const userData = {
-		id: user?.id || null,
-		username: user?.username || null,
-		first_name: user?.first_name || null,
-		last_name: user?.last_name || null,
-		phone: phone
-	  };
-
-	      // Сохраняем новый номер телефона отдельно по userId
-	  localStorage.setItem("phone_" + user.id, phone); // ← ДОБАВЛЕНО
-	      
-	  // Сохраняем всё как JSON
-	  localStorage.setItem("user_data", JSON.stringify(userData));
-
-	  // Меняем текст и переходим
-	  confirmBtn.textContent = "✅ Данные сохранены";
-	  confirmBtn.disabled = true;
-
-	  window.location.href = "passenger.html";
-	};
-
+      window.location.href = "passenger.html";
     };
-  </script>
+  };
+</script>
+
 
 </body>
 </html>
