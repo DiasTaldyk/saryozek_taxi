@@ -131,6 +131,9 @@
 		phone: phone
 	  };
 
+	      // Сохраняем новый номер телефона отдельно по userId
+	  localStorage.setItem("phone_" + user.id, phone); // ← ДОБАВЛЕНО
+	      
 	  // Сохраняем всё как JSON
 	  localStorage.setItem("user_data", JSON.stringify(userData));
 
