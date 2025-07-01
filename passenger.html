@@ -588,12 +588,9 @@
 		  savedOrders.intercity = null;
 		  localStorage.removeItem("intercity_order");
 		}
-	if(k=="intercity_orders"){
-		cancelOrderInFirebase("intercity_orders");
-	}
-	else{
-		cancelOrderInFirebase("intercity_orders");
-	}
+	
+		cancelOrderInFirebase(k);
+
       document.getElementById("summary").style.display = "none";
       document.getElementById("saryozekForm").classList.remove("hidden");
       document.getElementById("intercityForm").classList.remove("hidden");
