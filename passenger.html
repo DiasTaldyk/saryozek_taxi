@@ -646,7 +646,7 @@
 	}
 
 	
-	
+
 	function orderTaxi() { 
 	  const from = document.getElementById("from").value.trim();
 	  const to = document.getElementById("to").value.trim();
@@ -674,6 +674,10 @@
 		  createdAt: new Date().toISOString()
 		};
 
+		// 👉 ДОБАВЬ ЭТО:
+		savedOrders.saryozek = order;
+		localStorage.setItem("saryozek_order", JSON.stringify(order));
+
 		showSummary(order);
 
 		saveToFirebase(order)
@@ -688,6 +692,7 @@
 		  });
 	  });
 	}
+
 
 	
 	
@@ -752,6 +757,9 @@
 			: null,
 		  createdAt: new Date().toISOString()
 		};
+		savedOrders.saryozek = order;
+		localStorage.setItem("saryozek_order", JSON.stringify(order));
+
 
 		showSummary(order);
 
