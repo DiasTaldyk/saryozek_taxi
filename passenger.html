@@ -663,6 +663,12 @@
 	  showLoader(); // ← Показываем лоадер
 
 	  getLocation(location => {
+		  if (!location) {
+			  hideLoader();
+			  alert("⚠️ Не удалось получить местоположение. Разрешите доступ к геолокации.");
+			  return;
+			}
+
 		const order = {
 		  from,
 		  to,
@@ -747,6 +753,12 @@
 	  showLoader(); // Показать лоадер
 
 	  getLocation(location => {
+  		  if (!location) {
+			  hideLoader();
+			  alert("⚠️ Не удалось получить местоположение. Разрешите доступ к геолокации.");
+			  return;
+			}
+
 		const order = {
 		  from: "Моё местоположение",
 		  to: "-",
@@ -791,6 +803,12 @@
 	  showLoader(); // Показать лоадер
 
 	  getLocation(location => {
+  		  if (!location) {
+			  hideLoader();
+			  alert("⚠️ Не удалось получить местоположение. Разрешите доступ к геолокации.");
+			  return;
+			}
+
 		const order = {
 		  from,
 		  to,
