@@ -803,6 +803,9 @@
 		};
 
 		showSummary(order);
+		
+		savedOrders.intercity = order;
+		localStorage.setItem("intercity_order", JSON.stringify(order));
 
 		saveToFirebase(order)
 		  .then(() => {
