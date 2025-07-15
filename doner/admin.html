@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель МЕДОМ</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            gap: 10px;
+        }
+
+        .header-row h1 {
+            font-size: 18px;
+            white-space: nowrap;
+        }
+
+        .admin-switch {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .switch-label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        #workModeStatus {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        .open-status {
+            color: #4CAF50;
+        }
+        .closed-status {
+            color: #F44336;
+        }
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+        }
+        .status-pending { background: #FFA000; }
+        .status-accepted { background: #2196F3; }
+        .status-cooking { background: #4CAF50; }
+        .status-delivery { background: #9C27B0; }
+        .status-completed { background: #607D8B; }
+        .status-rejected { background: #F44336; }
+        select {
+            padding: 5px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.delete-btn {
+            background: #F44336;
+        }
+        button.delete-btn:hover {
+            background: #d32f2f;
+        }
+        #debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 5px;
+            display: none; /* Скрываем debug-логи */
+        }
+        
+        /* Accordion styles */
+        .accordion {
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .accordion-header {
+            background: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .accordion-header i {
+            transition: transform 0.3s;
+        }
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            background: #f9f9f9;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content-inner {
+            padding: 15px;
+        }
+        
+        /* Location icon */
+        .location-icon {
+            color: #F44336;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .accordion-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 15px;
+            background: #f1f1f1;
+        }
+        
+        @media (max-width: 480px) {
+            .header-row h1 {
+                font-size: 16px;
+            }
+            .admin-switch {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-row">
+        <h1>Заказы</h1>
+        <div class="admin-switch">
+            <span class="switch-label">Режим:</span>
+            <label class="switch">
+                <input type="checkbox" id="workModeToggle">
+                <span class="slider"></span>
+            </label>
+            <span id="workModeStatus" class="closed-status">Загрузка...</span>
+        </div>
+    </div>
+
+    <div id="orders-accordion">
+        <p>Загрузка заказов...</p>
+    </div>
+    <div id="debug"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
+            authDomain: "saryozek-taxi.firebaseapp.com",
+            projectId: "saryozek-taxi",
+            storageBucket: "saryozek-taxi.appspot.com",
+            messagingSenderId: "758286199664",
+            appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
+            measurementId: "G-7PMSMGB7K3"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const workModeToggle = document.getElementById('workModeToggle');
+        const workModeStatus = document.getElementById('workModeStatus');
+
+        db.collection("settings").doc("workMode").onSnapshot((doc) => {
+            if (doc.exists) {
+                const isOpen = doc.data().isOpen || false;
+                workModeToggle.checked = isOpen;
+                updateStatusUI(isOpen);
+            } else {
+                db.collection("settings").doc("workMode").set({
+                    isOpen: false,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        });
+
+        workModeToggle.addEventListener('change', async () => {
+            const isOpen = workModeToggle.checked;
+            try {
+                await db.collection("settings").doc("workMode").update({
+                    isOpen: isOpen,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                updateStatusUI(isOpen);
+                // debugLog(`Режим изменен: ${isOpen ? "Открыто" : "Закрыто"}`);
+            } catch (error) {
+                // debugLog(`Ошибка: ${error.message}`);
+                alert("Не удалось изменить режим!");
+            }
+        });
+
+        function updateStatusUI(isOpen) {
+            workModeStatus.textContent = isOpen ? "Открыто" : "Закрыто";
+            workModeStatus.className = isOpen ? "open-status" : "closed-status";
+        }
+
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            console.log(message);
+        }
+
+        const ordersAccordion = document.getElementById('orders-accordion');
+        
+        // Создаем аккордеоны для каждого статуса
+        const statusOrder = ['pending', 'accepted', 'cooking', 'delivery', 'completed', 'rejected'];
+        
+        function createAccordions() {
+            ordersAccordion.innerHTML = '';
+            
+            statusOrder.forEach(status => {
+                const accordion = document.createElement('div');
+                accordion.className = 'accordion';
+                accordion.innerHTML = `
+                    <div class="accordion-header" data-status="${status}">
+                        <span>${getStatusText(status)}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner" id="orders-${status}">
+                            <p>Нет заказов</p>
+                        </div>
+                        ${status === 'completed' || status === 'rejected' ? `
+                        <div class="accordion-actions">
+                            <button class="delete-btn" onclick="deleteAllOrders('${status}')">
+                                <i class="fas fa-trash"></i> Удалить все
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                ordersAccordion.appendChild(accordion);
+            });
+            
+            // Добавляем обработчики для аккордеонов
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+        }
+        
+        // Загружаем заказы
+        db.collection("aliOrders").onSnapshot((snapshot) => {
+            // debugLog(`Получены данные. Количество заказов: ${snapshot.size}`);
+            
+            if (snapshot.empty) {
+                createAccordions();
+                return;
+            }
+            
+            // Создаем аккордеоны если их еще нет
+            if (ordersAccordion.querySelector('.accordion') === null) {
+                createAccordions();
+            }
+            
+            // Группируем заказы по статусам
+            const ordersByStatus = {};
+            statusOrder.forEach(status => {
+                ordersByStatus[status] = [];
+            });
+            
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                const orderId = doc.id;
+                // debugLog(`Обработка заказа ID: ${orderId}`);
+                
+                if (order.status && ordersByStatus.hasOwnProperty(order.status)) {
+                    ordersByStatus[order.status].push({id: orderId, data: order});
+                } else {
+                    ordersByStatus.pending.push({id: orderId, data: order});
+                }
+            });
+            
+            // Обновляем содержимое каждого аккордеона
+            statusOrder.forEach(status => {
+                const container = document.getElementById(`orders-${status}`);
+                if (ordersByStatus[status].length === 0) {
+                    container.innerHTML = '<p>Нет заказов</p>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                ordersByStatus[status].forEach(order => {
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card';
+                    
+                    // Добавляем иконку локации если есть координаты
+                    let locationIcon = '';
+                    if (order.data.location && order.data.location.lat && order.data.location.lng) {
+                        locationIcon = `<i class="fas fa-map-marker-alt location-icon" 
+                                          onclick="openLocation(${order.data.location.lat}, ${order.data.location.lng})"></i>`;
+                    }
+                    
+                    orderCard.innerHTML = `
+                        <div class="order-header">
+                            <span>Заказ #${order.data.orderNumber} ${locationIcon}</span>
+                            <span class="order-status status-${status}">
+                                ${getStatusText(status)}
+                            </span>
+                        </div>
+                        <p><strong>Телефон:</strong> ${order.data.phone}</p>
+                        <p><strong>Адрес:</strong> ${order.data.address}</p>
+                        <p><strong>Сумма:</strong> ${order.data.total} ₸</p>
+                        <div class="order-items">
+                            <strong>Товары:</strong>
+                            <ul>
+                                ${order.data.items.map(item => `<li>${item.name} - ${item.price} ₸</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="order-actions">
+                            <select id="status-${order.id}">
+                                ${statusOrder.map(s => 
+                                    `<option value="${s}" ${status === s ? 'selected' : ''}>${getStatusText(s)}</option>`
+                                ).join('')}
+                            </select>
+                            <button onclick="updateOrderStatus('${order.id}')">Обновить</button>
+                            ${status === 'completed' || status === 'rejected' ? `
+                            <button class="delete-btn" onclick="deleteOrder('${order.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    container.appendChild(orderCard);
+                });
+            });
+            
+        }, (error) => {
+            // debugLog(`Ошибка при загрузке заказов: ${error.message}`);
+            alert("Ошибка при загрузке заказов");
+        });
+
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'Ожидает',
+                'accepted': 'Принят',
+                'cooking': 'Готовится',
+                'delivery': 'Доставляется',
+                'completed': 'Завершен',
+                'rejected': 'Отклонен'
+            };
+            return statuses[status] || status;
+        }
+
+        async function updateOrderStatus(orderId) {
+            const newStatus = document.getElementById(`status-${orderId}`).value;
+            // debugLog(`Обновление статуса заказа ${orderId} на ${newStatus}`);
+            try {
+                await db.collection("aliOrders").doc(orderId).update({
+                    status: newStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                // debugLog(`Статус заказа ${orderId} обновлен.`);
+            } catch (error) {
+                // debugLog(`Ошибка: ${error.message}`);
+                alert("Не удалось обновить статус.");
+            }
+        }
+        
+        async function deleteOrder(orderId) {
+            if (!confirm("Вы уверены, что хотите удалить этот заказ?")) return;
+            
+            try {
+                await db.collection("aliOrders").doc(orderId).delete();
+                // debugLog(`Заказ ${orderId} удален.`);
+            } catch (error) {
+                // debugLog(`Ошибка при удалении заказа: ${error.message}`);
+                alert("Не удалось удалить заказ");
+            }
+        }
+        
+        async function deleteAllOrders(status) {
+            if (!confirm(`Вы уверены, что хотите удалить ВСЕ заказы со статусом "${getStatusText(status)}"?`)) return;
+            
+            try {
+                const snapshot = await db.collection("aliOrders").where("status", "==", status).get();
+                const batch = db.batch();
+                
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                // debugLog(`Удалено ${snapshot.size} заказов со статусом ${status}`);
+                alert(`Удалено ${snapshot.size} заказов`);
+            } catch (error) {
+                // debugLog(`Ошибка при удалении заказов: ${error.message}`);
+                alert("Не удалось удалить заказы");
+            }
+        }
+        
+        function openLocation(lat, lng) {
+            const url = `https://www.google.com/maps?q=${lat},${lng}`;
+            window.open(url, '_blank');
+        }
+
+        window.updateOrderStatus = updateOrderStatus;
+        window.openLocation = openLocation;
+        window.deleteOrder = deleteOrder;
+        window.deleteAllOrders = deleteAllOrders;
+    </script>
+</body>
+</html>
