@@ -1,0 +1,753 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Водитель</title>
+  <style>
+
+    body {
+	    margin: 0;
+	    font-family: sans-serif;
+	    min-height: 100dvh;
+	    display: flex;
+	    flex-direction: column;
+	    overflow: auto;
+		padding-top: 20px; 
+	   
+    }
+
+
+    header {
+
+      color: white;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      
+    }
+
+   
+	
+	
+	.inner-header {
+	  background: #4facfe;
+	  color: white;
+	  padding: 15px 10px;
+	  margin-bottom: 2px;
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  border-radius: 10px;
+	}
+	
+	
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      white-space: nowrap;
+      margin-right: 10px;
+    }
+
+    .ticker {
+      overflow: hidden;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .ticker-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 15s linear infinite;
+      color: white;
+      font-size: 14px;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .viewport {
+	  flex: 1;
+	  overflow: hidden;
+	  position: relative;
+	  padding-top: 30px;
+	}
+
+    .content {
+	  display: flex;
+	  transition: transform 0.3s ease;
+	  height: 100%;
+	  width: 300vw; /* если 3 вкладки */
+	}
+
+	.tab-page {
+	  min-width: 100vw;
+	  box-sizing: border-box;
+	}
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      margin: -10px auto 30px;
+      padding: 0px;
+      box-sizing: border-box;
+	  overflow-y: auto;
+	  flex-grow: 1;
+    }
+
+    input, select, textarea, button {
+/*      width: 100%; */
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #4facfe;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00c6ff;
+    }
+
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #4facfe;
+      position: fixed;
+      bottom: 20px; /* 👈 Изменено с 0 на 60px */
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #00c6ff;
+    }
+
+    .order-summary {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 10px 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      max-width: 90%;
+      display: none;
+    }
+
+    .order-summary p {
+      margin: 5px 0;
+    }
+
+    .order-summary::before {
+      content: "Ваш заказ";
+      display: block;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .location-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: url('https://cdn-icons-png.flaticon.com/512/684/684908.png') no-repeat center;
+      background-size: contain;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    
+
+    .hidden { display: none !important; }
+	
+	
+	
+	.loader-overlay {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  background: rgba(0, 0, 0, 0.5);
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  z-index: 2000;
+	  display: none;
+	}
+
+	.loader {
+	  border: 5px solid #f3f3f3;
+	  border-top: 5px solid #4facfe;
+	  border-radius: 50%;
+	  width: 50px;
+	  height: 50px;
+	  animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+	  0% { transform: rotate(0deg); }
+	  100% { transform: rotate(360deg); }
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	.button-group {
+	  display: flex;
+	  justify-content: flex-start; /* 👈 ВЫРАВНИВАНИЕ ПО ЛЕВОМУ КРАЮ */;
+	  gap: 12px;
+	  margin-top: 16px;
+	  flex-wrap: wrap;
+	}
+
+	.accept-btn,
+	.reject-btn {
+	  padding: 6px 8px;
+	  font-size: 12px;
+	  font-weight: 600;
+	  border: none;
+	  border-radius: 12px;
+	  cursor: pointer;
+	  transition: all 0.3s ease;
+	  white-space: nowrap;
+	  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+	}
+
+	.accept-btn {
+	  background-color: #4caf50;
+	  color: white;
+	}
+
+	.accept-btn:hover {
+	  background-color: #43a047;
+	}
+
+	.reject-btn {
+	  background-color: #f44336;
+	  color: white;
+	}
+
+	.reject-btn:hover {
+	  background-color: #e53935;
+	}
+
+
+
+	
+	
+	
+	
+	.order-list {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 15px;
+	  padding-top: 17px; /* ✅ Добавлено */
+	  padding-bottom: 20px;
+	}
+
+	.order-card {
+	   background: #f9f9f9; /* светлый фон */
+	   
+	  border-radius: 12px;
+	  padding: 15px;
+	  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+	}
+
+	
+  </style>
+
+  
+  
+<!-- Firebase SDK -->
+
+
+<!-- Firebase App (всегда первый) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqhj_A7f6GtpK-swJCDbSjne5zdy2XnAE",
+    authDomain: "saryozek-taxi.firebaseapp.com",
+    projectId: "saryozek-taxi",
+    storageBucket: "saryozek-taxi.firebasestorage.app",
+    messagingSenderId: "758286199664",
+    appId: "1:758286199664:web:a0b88b3b9c1316f878fdb5",
+    measurementId: "G-7PMSMGB7K3"
+  };
+
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  
+</script>
+  
+  
+  </head>
+ 
+
+
+<body>
+  <header>
+   
+  </header>
+
+  <div class="order-summary" id="summary"></div>
+
+  <div class="viewport">
+    <div class="content" id="content">
+      <div class="tab-page">
+        
+		
+		<div class="inner-header">
+		  <div class="logo">Сарыөзек Такси</div>
+		  <div class="ticker">
+			<div class="ticker-text">📞 Колл-центр: +7 777 123 4567 — Быстрый и надёжный сервис!</div>
+		  </div>
+		</div>
+
+		  
+		<div class="container" id="saryozekContainer" style="display: flex; flex-direction: column; min-height: 100%;">
+			<h2>Доступные заказы</h2>
+			<div class="order-list">
+			  <div class="order-card">
+				<!-- Заказ 1 -->
+				<p>
+				  
+				</p>
+
+				<div class="button-group">
+				
+				</div>
+			  </div>
+
+			  
+			  <!-- 
+			  <div class="order-card">
+				 
+				<p><strong>Откуда:</strong> Жібек жолы</p>
+				<p><strong>Куда:</strong> Күреңбел</p>
+				<p><strong>Примечание:</strong> доставка</p>
+				<p><strong>Пассажир:</strong> Арлан</p>
+				<p><strong>Телефон:</strong> +7 700 185 7454</p>
+				<div class="button-group">
+				  <button class="accept-btn">✅ Принять</button>
+				  <button class="reject-btn">❌ Отклонить</button>
+				</div>
+			  </div>
+			  -->
+			  
+			  
+			  
+			  
+			  
+			  
+			  
+			  
+			</div>
+
+
+		  <!--
+			<div id="userSummary" style="background:#f2f2f2; padding:10px; border-radius:10px; margin-bottom:15px;">
+			  <p><strong>ID:</strong> <span id="showUserId">-</span></p>
+			  <p><strong>Имя:</strong> <span id="showFirstName">-</span></p>
+			  <p><strong>Username:</strong> <span id="showUsername">-</span></p>
+			  <p><strong>Телефон:</strong> <span id="showPhone">-</span></p>
+			</div>
+			-->
+			
+			 
+			  
+
+
+
+		  
+      </div>
+	  </div>
+
+      <div class="tab-page">
+        <div class="inner-header">
+			  <div class="logo">Сарыөзек Такси</div>
+			  <div class="ticker">
+				<div class="ticker-text">📞 Колл-центр: +7 777 123 4567 — Быстрый и надёжный сервис!</div>
+			  </div>
+			</div>
+		<div class="container" id="intercityContainer" style="display: flex; flex-direction: column; min-height: 100%;">
+          
+
+		  <div id="intercityForm">
+            <h2>Доступные заказы</h2>
+			
+			<div class="order-card">
+				<!-- Заказ 1 -->
+				<p><strong>Откуда:</strong>Сарыозек</p>
+				<p><strong>Куда:</strong> Алматы</p>
+				<p><strong>Цена (тг):</strong> 3000</p>
+				<p><strong>Дата и время:</strong> 06.07.2025  15:00</p>
+				<p><strong>Пассажир:</strong> Арлан</p>
+				<p><strong>Телефон:</strong> +7 700 185 7414</p>
+				<div class="button-group">
+				  <button class="accept-btn">✅ Принять</button>
+				  <button class="reject-btn">❌ Отклонить</button>
+				</div>
+			  </div>
+			  
+			 
+			
+			  
+			  <div class="order-card">
+				<!-- Заказ 2 -->
+				<p><strong>Откуда:</strong>Сарыозек</p>
+				<p><strong>Куда:</strong> Талдықорған</p>
+				<p><strong>Цена (тг):</strong> 3000</p>
+				<p><strong>Дата и время:</strong> 06.07.2025  15:00</p>
+				<p><strong>Пассажир:</strong> Жеңіс</p>
+				<p><strong>Телефон:</strong> +7 700 125 7450</p>
+				<div class="button-group">
+				  <button class="accept-btn">✅ Принять</button>
+				  <button class="reject-btn">❌ Отклонить</button>
+				</div>
+			  </div>
+			  
+			  
+			  <div class="order-card">
+				<!-- Заказ 3 -->
+				<p><strong>Откуда:</strong>Сарыозек</p>
+				<p><strong>Куда:</strong> Талдықорған</p>
+				<p><strong>Цена (тг):</strong> 3000</p>
+				<p><strong>Дата и время:</strong> 06.07.2025  11:00</p>
+				<p><strong>Пассажир:</strong> Дастан</p>
+				<p><strong>Телефон:</strong> +7 7 00 125 1150</p>
+				<div class="button-group">
+				  <button class="accept-btn">✅ Принять</button>
+				  <button class="reject-btn">❌ Отклонить</button>
+				</div>
+			  </div>
+			  
+			
+			</div>
+			
+            
+        </div>
+      </div>
+
+      <div class="tab-page">
+        <div class="inner-header">
+		  <div class="logo">Сарыөзек Такси</div>
+		  <div class="ticker">
+			<div class="ticker-text">📞 Колл-центр: +7 777 123 4567 — Быстрый и надёжный сервис!</div>
+		  </div>
+		</div>
+
+		
+		<div class="container">
+          <h2>👤 Профиль</h2>
+					
+			<div id="userSummary" style="background:#f2f2f2; padding:10px; border-radius:10px; margin-bottom:15px;">
+			  <p><strong>ID:</strong> Загрузка... <span id="showUserId">-</span></p>
+			  <p><strong>Имя:</strong> <span id="showFirstName">-</span></p>
+			  <p><strong>Username:</strong> <span id="showUsername">-</span></p>
+			  <p><strong>Телефон:</strong> <span id="showPhone">-</span></p>
+			</div>
+			
+			
+
+
+
+		
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(0)">Сарыозек</div>
+    <div class="tab" onclick="showTab(1)">Межгород</div>
+    <div class="tab" onclick="showTab(2)">Профиль</div>
+  </div>
+
+  <script>
+
+
+    let currentTab = 0;
+    const content = document.getElementById("content");
+
+	function showTab(index) {
+	  content.style.transition = "transform 0.3s ease";
+	  content.style.transform = `translateX(-${index * 100}vw)`;
+
+	  document.querySelectorAll(".tab").forEach((tab, i) => {
+		tab.classList.toggle("active", i === index);
+	  });
+	  currentTab = index;
+
+	}
+
+
+    window.onload = () => {
+		
+
+		showTab(0);
+
+	  
+	  
+	  
+	  
+	  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+
+		document.getElementById("showUserId").textContent = parsedUser.id || "-";
+		document.getElementById("showFirstName").textContent = parsedUser.first_name || "-";
+		document.getElementById("showUsername").textContent = parsedUser.username ? "@" + parsedUser.username : "-";
+		document.getElementById("showPhone").textContent = parsedUser.phone || "-";
+
+		window.Telegram.WebApp.ready
+		
+		
+		
+		
+		
+		
+		
+		const saved = JSON.parse(localStorage.getItem("accepted_order"));
+		if (saved && saved.id) {
+		  showAcceptedOrder();
+		} else {
+		  listenToOrders(); // только если нет принятого заказа
+		}
+
+	  
+    }
+	
+	
+	let touchStartX = 0;
+	let touchEndX = 0;
+
+	const swipeArea = document.querySelector('.viewport');
+
+	swipeArea.addEventListener('touchstart', e => {
+	  touchStartX = e.changedTouches[0].screenX;
+	});
+
+	swipeArea.addEventListener('touchend', e => {
+	  touchEndX = e.changedTouches[0].screenX;
+	  handleSwipe();
+	});
+
+	function handleSwipe() {
+	  const delta = touchEndX - touchStartX;
+	  const threshold = 50; // минимум 50px
+
+	  if (Math.abs(delta) > threshold) {
+		if (delta > 0 && currentTab > 0) {
+		  showTab(currentTab - 1); // свайп вправо
+		} else if (delta < 0 && currentTab < 2) {
+		  showTab(currentTab + 1); // свайп влево
+		}
+	  }
+	}
+
+// Функция отображения принятого заказа и кнопки "Завершить"
+function showAcceptedOrder() {
+  const order = JSON.parse(localStorage.getItem("accepted_order") || "{}");
+
+  orderList.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "order-card";
+
+  card.innerHTML = `
+    <p><strong>Откуда:</strong> ${order.from || "-"}</p>
+    <p><strong>Куда:</strong> ${order.to || "-"}</p>
+    <p><strong>Примечание:</strong> ${order.note || "-"}</p>
+    <p><strong>Пассажир:</strong> ${order.first_name || "-"}</p>
+    <p><strong>Телефон:</strong> ${order.phone || "-"}</p>
+    <div class="button-group">
+      <button class="reject-btn" onclick="finishOrder()">✅ Завершить заказ</button>
+    </div>
+  `;
+
+  orderList.appendChild(card);
+}
+// Кнопка "Завершить заказ"
+function finishOrder() {
+  localStorage.removeItem("accepted_order");
+  listenToOrders();
+}
+
+
+  </script>
+  <!-- 1. Добавим код для отслеживания заказов из Firestore -->
+<script>
+const orderList = document.querySelector(".order-list");
+
+function renderOrderCard(doc, docId) {
+  const data = doc.data();
+
+  const card = document.createElement("div");
+  card.className = "order-card";
+
+  const lat = data.location?.lat || 0;
+  const lng = data.location?.lng || 0;
+
+  card.innerHTML = `
+    <p><strong><img src="icongps.jpg" width="14" style="vertical-align: middle; margin-right: 6px;"> Откуда:</strong>
+      <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="text-decoration:none;color:inherit;">${data.from || "-"}</a>
+    </p>
+    <p><strong>Куда:</strong> ${data.to || "-"}</p>
+    <p><strong>Примечание:</strong> ${data.note || "-"}</p>
+    <p><strong>Пассажир:</strong> ${data.first_name || "-"}</p>
+    <p><strong>Телефон:</strong> ${data.phone || "-"}</p>
+    <div class="button-group">
+      <button class="accept-btn">✅ Принять</button>
+      <button class="reject-btn">❌ Отклонить</button>
+    </div>
+  `;
+
+  card.querySelector(".accept-btn").addEventListener("click", () => acceptOrder(docId));
+  card.querySelector(".reject-btn").addEventListener("click", () => rejectOrder(docId));
+
+  orderList.appendChild(card);
+}
+
+
+
+
+
+// Подключение к Firestore и отображение заказов со статусом true
+function listenToOrders2() {
+  db.collection("orders")
+    .where("status", "==", true)
+    .onSnapshot((snapshot) => {
+      orderList.innerHTML = "";
+      snapshot.forEach((doc) => renderOrderCard(doc, doc.id));
+    });
+}
+function listenToOrders() {
+  unsubscribeOrders = db.collection("orders")
+    .where("status", "==", true)
+    .onSnapshot((snapshot) => {
+      orderList.innerHTML = "";
+      snapshot.forEach((doc) => renderOrderCard(doc, doc.id));
+    });
+}
+
+
+
+
+let unsubscribeOrders = null;
+// Функция "Принять" — обновляет заказ в Firestore
+function acceptOrder(docId) {
+  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const driverName = parsedUser.first_name || "Без имени";
+  const driverPhone = parsedUser.phone || "Нет телефона";
+
+  document.getElementById("loader").style.display = "flex";
+
+  db.collection("orders").doc(docId).get().then((doc) => {
+    if (doc.exists) {
+      const orderData = doc.data();
+      localStorage.setItem("accepted_order", JSON.stringify({ id: docId, ...orderData }));
+    }
+
+    // Обновление в базе
+    return db.collection("orders").doc(docId).update({
+      status: false,
+      accepted_by: driverName,
+      driver_phone: driverPhone
+    });
+  }).then(() => {
+    document.getElementById("loader").style.display = "none";
+    alert("Вы приняли заказ. Клиент увидит ваше имя и номер.");
+
+    // Остановить прослушку
+    if (unsubscribeOrders) unsubscribeOrders();
+
+    // Отобразить только принятый заказ
+    showAcceptedOrder();
+  });
+}
+
+function acceptOrder2(docId) {
+  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const driverName = parsedUser.first_name || "Без имени";
+  const driverPhone = parsedUser.phone || "Нет телефона";
+
+  document.getElementById("loader").style.display = "flex";
+
+  db.collection("orders").doc(docId).update({
+    status: false,
+    accepted_by: driverName,
+    driver_phone: driverPhone
+  }).then(() => {
+    document.getElementById("loader").style.display = "none";
+    alert("Вы приняли заказ. Клиент увидит ваше имя и номер.");
+  });
+}
+
+// Функция "Отклонить" — просто удаляет заказ (или можешь изменить статус)
+function rejectOrder(docId) {
+  db.collection("orders").doc(docId).update({
+    status: false
+  });
+}
+
+// Вызов после загрузки
+window.onload = () => {
+  showTab(0);
+
+  const parsedUser = JSON.parse(localStorage.getItem("user_data") || "{}");
+  document.getElementById("showUserId").textContent = parsedUser.id || "-";
+  document.getElementById("showFirstName").textContent = parsedUser.first_name || "-";
+  document.getElementById("showUsername").textContent = parsedUser.username ? "@" + parsedUser.username : "-";
+  document.getElementById("showPhone").textContent = parsedUser.phone || "-";
+
+  listenToOrders();
+  window.Telegram.WebApp.ready();
+};
+</script>
+
+
+
+<div class="loader-overlay" id="loader">
+  <div class="loader"></div>
+  <div style="color: white; margin-top: 20px;">Обработка заказа...</div>
+</div>
+</body>
+</html>
