@@ -56,6 +56,8 @@
 </head>
 <body>
 
+  <h2>Программа тестовом режиме</h2>
+
   <h2>👤 Ваши данные</h2>
 
   <div class="field"><label>ID:</label> <span id="userId">-</span></div>
@@ -68,9 +70,9 @@
     <input type="tel" id="phoneInput" placeholder="+7 777 123 4567" />
   </div>
 
-  <button id="confirmBtn" disabled onclick="confirmData()">✅ Подтвердить данные</button>
-<br>
-<a href = "driver.html" ><button >✅ Водитель</button> </a>
+  <button id="confirmBtn" disabled onclick="confirmData()">✅ Пасажир</button>
+  
+  <a href = "driver.html" ><button id="confirmBtn2" disabled onclick="confirmData()" >✅ Водитель</button> </a>
 
   <script>
   window.onload = () => {
@@ -80,6 +82,7 @@
     const user = tg.initDataUnsafe?.user;
     const phoneInput = document.getElementById("phoneInput");
     const confirmBtn = document.getElementById("confirmBtn");
+	const confirmBtn2 = document.getElementById("confirmBtn2");
 
     const currentUserId = user?.id || "no_id";
 
@@ -98,6 +101,7 @@
         if (savedData?.id === currentUserId && savedData?.phone) {
           phoneInput.value = savedData.phone;
           confirmBtn.disabled = false;
+		  confirmBtn2.disabled = false;
         }
       } catch (e) {
         console.error("Ошибка при разборе user_data:", e);
@@ -117,6 +121,7 @@
         phoneInput.value = "+7";
       }
       confirmBtn.disabled = phoneInput.value.length < 12;
+	  confirmBtn2.disabled = phoneInput.value.length < 12;
     });
 
     // Подтверждение
@@ -142,6 +147,7 @@
 
       confirmBtn.textContent = "✅ Данные сохранены";
       confirmBtn.disabled = true;
+	  confirmBtn2.disabled = true;
 
       window.location.href = "passenger.html";
     };
